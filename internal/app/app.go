@@ -191,6 +191,14 @@ func (m Model) Render(w, h int) string {
 	return lipgloss.JoinVertical(lipgloss.Left, m.header(w), body, m.footer(w))
 }
 
+// contentWidth is the width the active tab's View receives.
+func (m Model) contentWidth() int {
+	if m.mode == Full {
+		return m.w - sidebarW - 1
+	}
+	return m.w
+}
+
 func (m Model) collecting() bool {
 	for _, s := range m.store {
 		if s.collecting {
@@ -314,7 +322,7 @@ func (m Model) overviewData() overview.Data {
 		default:
 			d.OK++
 		}
-		body := e.Module.Card(sl.data, m.w-sidebarW-6)
+		body := e.Module.Card(sl.data, overview.CardWidth(m.contentWidth()))
 		if sl.err != nil && sl.data == nil {
 			body = theme.Current().Warn.Render(theme.Current().Glyph.Warn + " " + sl.err.Error())
 		}

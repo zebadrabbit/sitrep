@@ -1,0 +1,18 @@
+[
+  {
+    "target": "/",
+    "source": "/dev/sda2",
+    "fstype": "ext4",
+    "total": 235121487872,
+    "used": 111610671104,
+    "pct": 50.02643357727449
+  },
+  {
+    "target": "/opt/data",
+    "source": "/dev/dm-0",
+    "fstype": "xfs",
+    "total": 999681175552,
+    "used": 19175231488,
+    "pct": 1.918134697035972
+  }
+]

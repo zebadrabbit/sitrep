@@ -52,6 +52,18 @@ func (*Module) Info() string {
 		"(hostname, distro, kernel, uptime, load) comes from the system module."
 }
 
+// Columns is how many card columns fit in w. Cards need ~38 cells to show
+// a bar and its numbers, so two columns from 76 up.
+func Columns(w int) int {
+	if w >= 76 {
+		return 2
+	}
+	return 1
+}
+
+// CardWidth is the width a Card should render for in a w-wide overview.
+func CardWidth(w int) int { return w/Columns(w) - 5 }
+
 func (*Module) View(d module.Data, w, h int) string {
 	od, _ := d.(Data)
 	s := theme.Current()
@@ -60,10 +72,7 @@ func (*Module) View(d module.Data, w, h int) string {
 	status := fmt.Sprintf("%s %d ok  %s %d failed  %s %d needs-root",
 		s.OK.Render(s.Glyph.OK), od.OK, s.Crit.Render(s.Glyph.Fail), od.Failed, s.Warn.Render(s.Glyph.Degraded), od.NeedsRoot)
 	blocks := make([]string, 0, len(od.Cards))
-	cols := 1
-	if w >= 100 {
-		cols = 2
-	}
+	cols := Columns(w)
 	for _, c := range od.Cards {
 		blocks = append(blocks, ui.Box(c.Title, c.Body, w/cols-1))
 	}

@@ -138,6 +138,10 @@ func (r *Runner) fixture(key string) ([]byte, error) {
 	return fs.ReadFile(r.fixtures, "testdata/fixtures/"+r.Module+"/"+key)
 }
 
+// Capture writes a synthetic fixture (data a module derived without a
+// command, like statfs results) under fs/<name>. No-op unless capturing.
+func (r *Runner) Capture(name string, b []byte) { r.capture("fs"+name, b) }
+
 func (r *Runner) capture(key string, b []byte) {
 	if r.CaptureDir == "" {
 		return

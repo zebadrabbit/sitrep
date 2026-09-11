@@ -1,0 +1,128 @@
+{
+   "blockdevices": [
+      {
+         "name": "loop0",
+         "size": "63.8M",
+         "type": "loop",
+         "fstype": "squashfs",
+         "mountpoints": [
+             "/snap/core20/2769"
+         ],
+         "model": null
+      },{
+         "name": "loop1",
+         "size": "63.8M",
+         "type": "loop",
+         "fstype": "squashfs",
+         "mountpoints": [
+             "/snap/core20/2866"
+         ],
+         "model": null
+      },{
+         "name": "loop2",
+         "size": "74M",
+         "type": "loop",
+         "fstype": "squashfs",
+         "mountpoints": [
+             "/snap/core22/2411"
+         ],
+         "model": null
+      },{
+         "name": "loop3",
+         "size": "74M",
+         "type": "loop",
+         "fstype": "squashfs",
+         "mountpoints": [
+             "/snap/core22/2437"
+         ],
+         "model": null
+      },{
+         "name": "loop4",
+         "size": "115.3M",
+         "type": "loop",
+         "fstype": "squashfs",
+         "mountpoints": [
+             "/snap/lxd/40338"
+         ],
+         "model": null
+      },{
+         "name": "loop5",
+         "size": "115.3M",
+         "type": "loop",
+         "fstype": "squashfs",
+         "mountpoints": [
+             "/snap/lxd/40575"
+         ],
+         "model": null
+      },{
+         "name": "loop6",
+         "size": "50.1M",
+         "type": "loop",
+         "fstype": "squashfs",
+         "mountpoints": [
+             "/snap/snapd/27710"
+         ],
+         "model": null
+      },{
+         "name": "loop7",
+         "size": "50.3M",
+         "type": "loop",
+         "fstype": "squashfs",
+         "mountpoints": [
+             "/snap/snapd/27738"
+         ],
+         "model": null
+      },{
+         "name": "sda",
+         "size": "223.5G",
+         "type": "disk",
+         "fstype": null,
+         "mountpoints": [
+             null
+         ],
+         "model": "LOGICAL VOLUME",
+         "children": [
+            {
+               "name": "sda1",
+               "size": "1M",
+               "type": "part",
+               "fstype": null,
+               "mountpoints": [
+                   null
+               ],
+               "model": null
+            },{
+               "name": "sda2",
+               "size": "223.5G",
+               "type": "part",
+               "fstype": "ext4",
+               "mountpoints": [
+                   "/"
+               ],
+               "model": null
+            }
+         ]
+      },{
+         "name": "sdb",
+         "size": "931.5G",
+         "type": "disk",
+         "fstype": "LVM2_member",
+         "mountpoints": [
+             null
+         ],
+         "model": "LOGICAL VOLUME",
+         "children": [
+            {
+               "name": "datavg-datalv",
+               "size": "931.5G",
+               "type": "lvm",
+               "fstype": "xfs",
+               "mountpoints": [
+                   "/opt/data"
+               ],
+               "model": null
+            }
+         ]
+      }
+   ]
+}
