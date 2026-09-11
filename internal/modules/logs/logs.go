@@ -47,7 +47,7 @@ func New(demo bool) *Module { return &Module{run: collect.New("logs", demo)} }
 
 func (*Module) ID() string              { return "logs" }
 func (*Module) Title() string           { return "Logs" }
-func (*Module) Flags() module.Flags     { return module.Flags{} }
+func (*Module) Flags() module.Flags     { return module.Flags{Slow: true} } // journalctl over an hour can take ~1s
 func (*Module) Interval() time.Duration { return 10 * time.Second }
 func (*Module) Update(tea.Msg) tea.Cmd  { return nil }
 func (*Module) Keys() []key.Binding     { return nil }

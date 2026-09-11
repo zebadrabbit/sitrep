@@ -154,6 +154,15 @@ func (m Model) forward(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// hotkey is the digit for an entry, or a space past the tenth tab (tab
+// still cycles to it).
+func hotkey(e module.Entry) string {
+	if e.Hotkey == 0 {
+		return " "
+	}
+	return string(e.Hotkey)
+}
+
 func (m Model) activeEntry() *module.Entry {
 	if len(m.tabs) == 0 {
 		return nil
@@ -244,7 +253,7 @@ func (m Model) sidebar() string {
 	var b strings.Builder
 	for i, ti := range m.tabs {
 		e := m.entries[ti]
-		line := " " + ui.Hotkey(string(e.Hotkey), " "+e.Module.Title())
+		line := " " + ui.Hotkey(hotkey(e), " "+e.Module.Title())
 		if i == m.active {
 			line = s.Accent.Render("▎") + line[1:]
 		}
@@ -264,7 +273,7 @@ func (m Model) tabLine() string {
 		if i == m.active {
 			t = theme.Current().Bold.Render(t)
 		}
-		parts = append(parts, "["+ui.Hotkey(string(e.Hotkey), "")+"]"+t)
+		parts = append(parts, "["+ui.Hotkey(hotkey(e), "")+"]"+t)
 	}
 	return strings.Join(parts, " ")
 }
