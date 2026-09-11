@@ -8,7 +8,7 @@ GOBIN    := $(shell go env GOPATH)/bin
 LINT     := $(GOBIN)/golangci-lint
 export CGO_ENABLED=0
 
-.PHONY: build run demo test screenshot lint install clean
+.PHONY: build run demo test screenshot lint install clean gif
 
 build:
 	GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '$(LDFLAGS)' -o dist/$(BIN) ./cmd/sitrep
@@ -36,6 +36,10 @@ screenshot: build
 lint:
 	@test -x $(LINT) || go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
 	$(LINT) run ./...
+
+# README gif. Needs vhs (go install github.com/charmbracelet/vhs@latest), ttyd, ffmpeg.
+gif: build
+	VHS_NO_SANDBOX=true PATH="$(CURDIR)/dist:$(GOBIN):$$PATH" vhs docs/demo.tape
 
 install: build
 	install -m 755 dist/$(BIN) ~/.local/bin/$(BIN)

@@ -26,3 +26,9 @@ One line each, with the reason. HANDOFF.md is the contract; this file records wh
 - **System demo fixture** is the collected `Data` as JSON (`system/data.json`) because gopsutil reads /proc directly; there is no command output to capture. Ports goes through the real parsers.
 - **Ports grouping (owner request, 2026-09-10):** rows sharing process name and port fold across addresses and IP families into one leader line (`0.0.0.0:137 +16`), collapsed by default. `space` expands one group in place, `c` shows the flat list. Grouping is by process *name*, not pid, because Docker runs one docker-proxy per IP family. tcp and udp never fold together since CONN only means something for tcp. Not in HANDOFF §6; adds to it without removing anything.
 - **Updates module pulled forward from v1.5** (owner request, 2026-09-10). Read-only: pending apt (security flagged), reboot-required, running vs newest installed kernel, and the last run of the owner's update script parsed from its log (`updates_log`, default `~/update-all.log`). No snap or pip "outdated" checks: those query the network, and the probe is sitrep's only outbound traffic.
+
+## 2026-09-10 — Phase 4
+
+- **nord theme, `theme set`, `config edit`.** `config edit` is the one `exec` outside `collect.Run`: it launches the user's `$EDITOR` on the user's config file, which is not collection.
+- **Network without iproute2** reads names and counters from `/proc/net/dev`, no addresses or routes. Found by running `doctor` in bare `debian:stable-slim`; invariant 4 needs Network to show.
+- **README gif not committed.** `docs/demo.tape` and `make gif` are in; on pandalab vhs 0.12 captures zero frames (headless Chromium starts, ttyd runs, no screenshots land), so the gif is rendered elsewhere or not at all. Not worth more of the lab box's time.

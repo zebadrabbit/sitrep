@@ -4,7 +4,8 @@ A read-only terminal situation report for a Linux box. Open it first, learn
 what the machine is doing and whether it is healthy, close it. Depth lives in
 `btop` and `netwatch`; sitrep is about **identity and status**.
 
-![sitrep demo](docs/sitrep.gif)
+`make gif` renders `docs/demo.tape` with [vhs](https://github.com/charmbracelet/vhs)
+into `docs/sitrep.gif` (not committed; needs vhs, ttyd, ffmpeg).
 
 ```
 sitrep                  # the TUI
