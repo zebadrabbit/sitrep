@@ -7,7 +7,7 @@ import (
 )
 
 func TestBuiltinThemesLoad(t *testing.T) {
-	for _, name := range []string{"amber", "mono"} {
+	for _, name := range []string{"amber", "mono", "nord"} {
 		s, err := Build(name, "")
 		if err != nil {
 			t.Fatalf("%s: %v", name, err)
@@ -37,7 +37,7 @@ func TestUserDirOverridesBuiltin(t *testing.T) {
 	if s.Glyph.OK != "*" {
 		t.Errorf("user override not applied: glyph = %q", s.Glyph.OK)
 	}
-	if got := List(dir); len(got) != 2 {
-		t.Errorf("List = %v, want amber+mono", got)
+	if got := List(dir); len(got) != 3 {
+		t.Errorf("List = %v, want amber+mono+nord", got)
 	}
 }

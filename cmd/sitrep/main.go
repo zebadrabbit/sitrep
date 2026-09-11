@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"slices"
 	"sort"
 	"strings"
@@ -351,8 +352,22 @@ func configCmd() *cobra.Command {
 			fmt.Fprintln(cmd.OutOrStdout(), "wrote", p)
 			return nil
 		}},
-		&cobra.Command{Use: "edit", Short: "Open the config in $EDITOR", RunE: func(*cobra.Command, []string) error {
-			return fmt.Errorf("not yet: edit %s by hand", config.Path())
+		&cobra.Command{Use: "edit", Short: "Open the config in $EDITOR (creates it first if absent)", RunE: func(*cobra.Command, []string) error {
+			if _, err := os.Stat(config.Path()); err != nil {
+				if _, err := config.Init(); err != nil {
+					return err
+				}
+			}
+			ed := os.Getenv("VISUAL")
+			if ed == "" {
+				ed = os.Getenv("EDITOR")
+			}
+			if ed == "" {
+				ed = "vi"
+			}
+			c := exec.Command(ed, config.Path()) // the one exec outside collect.Run: it is the user's editor, on the user's file
+			c.Stdin, c.Stdout, c.Stderr = os.Stdin, os.Stdout, os.Stderr
+			return c.Run()
 		}},
 	)
 	return c
@@ -366,6 +381,24 @@ func themeCmd() *cobra.Command {
 		}},
 		&cobra.Command{Use: "show", Short: "Print the active theme name", Run: func(cmd *cobra.Command, _ []string) {
 			fmt.Fprintln(cmd.OutOrStdout(), theme.Current().Name)
+		}},
+		&cobra.Command{Use: "set <name>", Short: "Select a theme in config", Args: cobra.ExactArgs(1), RunE: func(cmd *cobra.Command, args []string) error {
+			if _, err := theme.Build(args[0], config.ThemeDir()); err != nil {
+				return err
+			}
+			cfg, _, err := config.Load()
+			if err != nil {
+				return err
+			}
+			cfg.Theme = args[0]
+			if err := os.MkdirAll(config.Dir(), 0o755); err != nil {
+				return err
+			}
+			if err := cfg.Save(config.Path()); err != nil {
+				return err
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "theme %s (%s)\n", args[0], config.Path())
+			return nil
 		}},
 	)
 	return c

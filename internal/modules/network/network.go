@@ -5,6 +5,7 @@ package network
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -46,6 +47,7 @@ type Data struct {
 	DNS       []string  `json:"dns"`
 	RxHist    []float64 `json:"rx_hist"` // default iface, bytes/s
 	TxHist    []float64 `json:"tx_hist"`
+	Fallback  bool      `json:"fallback"` // ip missing: names and counters only
 	Collected time.Time `json:"collected"`
 }
 
@@ -217,14 +219,29 @@ func ParseResolv(out []byte) []string {
 func (m *Module) Collect(ctx context.Context) (module.Data, error) {
 	d := Data{Collected: m.now()}
 	addr, err := m.run.Run(ctx, "ip", "-d", "-j", "addr")
-	if err != nil {
+	switch {
+	case err == nil:
+		if d.Ifaces, err = ParseAddr(addr.Stdout); err != nil {
+			return nil, err
+		}
+		if route, err := m.run.Run(ctx, "ip", "-j", "route"); err == nil {
+			d.Gateway, d.DefaultIf, _ = ParseRoute(route.Stdout)
+		}
+	case errors.Is(err, collect.ErrMissing), errors.Is(err, collect.ErrNoFixture):
+		// No iproute2: names and counters from /proc/net/dev only (HANDOFF §10.4).
+		if b, err := m.run.ReadFile("/proc/net/dev"); err == nil {
+			for name := range ParseNetDev(b) {
+				kind := "unknown"
+				if name == "lo" {
+					kind = "loopback"
+				}
+				d.Ifaces = append(d.Ifaces, Iface{Name: name, State: "unknown", Kind: kind})
+			}
+			sort.Slice(d.Ifaces, func(i, j int) bool { return d.Ifaces[i].Name < d.Ifaces[j].Name })
+		}
+		d.Fallback = true
+	default:
 		return nil, err
-	}
-	if d.Ifaces, err = ParseAddr(addr.Stdout); err != nil {
-		return nil, err
-	}
-	if route, err := m.run.Run(ctx, "ip", "-j", "route"); err == nil {
-		d.Gateway, d.DefaultIf, _ = ParseRoute(route.Stdout)
 	}
 	if b, err := m.run.ReadFile("/etc/resolv.conf"); err == nil {
 		d.DNS = ParseResolv(b)
@@ -332,6 +349,9 @@ func (m *Module) View(d module.Data, w, h int) string {
 	}
 	s := theme.Current()
 	head := kv("default", nd.DefaultIf+" via "+nd.Gateway) + "   " + kv("dns", strings.Join(nd.DNS, ", "))
+	if nd.Fallback {
+		head = s.Warn.Render(s.Glyph.Degraded+" ip missing (iproute2): names and counters only") + "   " + kv("dns", strings.Join(nd.DNS, ", "))
+	}
 	rows := [][]string{}
 	for _, in := range nd.Ifaces {
 		g := s.Dim.Render(s.Glyph.Fail)

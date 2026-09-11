@@ -1,0 +1,59 @@
+# Theming
+
+sitrep ships three themes and reads yours from `~/.config/sitrep/themes/<name>.toml`.
+Pick one with `sitrep theme set <name>` or `theme = "<name>"` in `config.toml`.
+`sitrep theme list` shows what is available.
+
+```
+sitrep theme list        # amber mono nord + anything in ~/.config/sitrep/themes/
+sitrep theme set nord
+```
+
+## The file
+
+```toml
+name   = "amber"
+accent = "#F5A623"   # wordmark, selection bar, hotkey characters
+ok     = "#7CB342"   # ● and healthy bars
+warn   = "#F5A623"   # ◐ ! and 85% bars
+crit   = "#E53935"   # ○ !! and 95% bars
+dim    = "#6B6B6B"   # secondary text, borders, inactive rows
+port   = "#4DD0E1"   # port numbers in the Ports tab
+ascii  = false       # true swaps ● ○ ◐ ▸ for * o ~ >
+```
+
+Every color is a hex string. Leave one empty (`""`) for the terminal's
+default foreground; `mono` does that for all of them and relies on bold and
+faint. There is no background key on purpose: sitrep never paints a
+background, so your terminal's stays.
+
+A user file with the same name as a builtin overrides it. Partial files are
+fine: unspecified keys fall back to the terminal default, not to the builtin,
+so copy the builtin first if you only want to change one color:
+
+```
+mkdir -p ~/.config/sitrep/themes
+sitrep theme show > /dev/null   # just to make sure it runs
+cp $(go env GOMODCACHE 2>/dev/null)/... # or grab internal/theme/themes/amber.toml from the repo
+```
+
+## Glyphs
+
+The status glyph set is fixed and part of the design, not the theme:
+
+```
+●  ok / confident      ○  failed / stopped / unknown      ◐  degraded / needs root / likely
+!  warning threshold   !! critical threshold              +  new since launch
+```
+
+`ascii = true` maps them to `* o ~ ! !! +` for terminals whose font lacks
+them. `sitrep doctor` warns when the locale is not UTF-8 and suggests it.
+
+## Rules for contributors
+
+- Colors come from `internal/theme` only. A `lipgloss.Color("#…")` anywhere
+  else is a bug (HANDOFF §10.5).
+- Hotkey characters use `theme.Hotkey`, via `ui.Hotkey(key, rest)`. Nothing
+  else uses that style (§10.6).
+- Adding a color means adding a key to `Theme`, a style to `Styles`, and a
+  value in all three builtin files.

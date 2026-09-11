@@ -4,7 +4,10 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"testing/fstest"
 	"time"
+
+	"github.com/zebadrabbit/sitrep/internal/collect"
 )
 
 func TestParsers(t *testing.T) {
@@ -64,5 +67,23 @@ func TestEmbeddedFixture(t *testing.T) {
 	}
 	if v := m.View(d, 100, 28); !strings.Contains(v, "IFACE") || strings.Count(v, "\n") > 27 {
 		t.Errorf("view shape: %d lines", strings.Count(v, "\n"))
+	}
+}
+
+func TestNoIPFallback(t *testing.T) {
+	m := New(true)
+	m.run = collect.New("network", true).WithFixtures(fstest.MapFS{
+		"testdata/fixtures/network/fs/proc/net/dev": {Data: []byte("h\nh\n    lo: 1 1 0 0 0 0 0 0 1 1 0 0 0 0 0 0\n  eth0: 5 1 0 0 0 0 0 0 5 1 0 0 0 0 0 0\n")},
+	})
+	d, err := m.Collect(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	nd := d.(Data)
+	if !nd.Fallback || len(nd.Ifaces) != 2 || nd.Ifaces[0].Name != "eth0" || nd.Ifaces[0].RxBytes != 5 {
+		t.Errorf("fallback: %+v", nd)
+	}
+	if v := m.View(d, 100, 0); !strings.Contains(v, "ip missing") {
+		t.Error("view should say ip is missing")
 	}
 }
