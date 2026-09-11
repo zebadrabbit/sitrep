@@ -75,7 +75,7 @@ func modulesSection(ctx context.Context, entries []module.Entry) (Section, map[s
 		switch {
 		case err != nil:
 			cs = append(cs, Check{Fail, label, err.Error()})
-		case took > slowCollect:
+		case took > slowCollect && !m.Flags().Slow: // Slow modules budget 10s by design
 			cs = append(cs, Check{Degraded, label, fmt.Sprintf("%s — slow; consider raising its interval (%s)", took, e.Avail.Reason)})
 		default:
 			state := OK
