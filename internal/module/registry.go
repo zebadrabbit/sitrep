@@ -55,7 +55,7 @@ func Resolve(ctx context.Context, env detect.Env, cfg config.Config) []Entry {
 }
 
 // reservedKeys are global or tab-local bindings a hotkey must not shadow.
-const reservedKeys = "qrjkgGsplcaL?/"
+const reservedKeys = "qrjkgGspcaL?/"
 
 // letterHotkey picks the first letter of title not reserved or already used,
 // for tabs past the tenth. 0 when nothing is free (tab still reaches it).
