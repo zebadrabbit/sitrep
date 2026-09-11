@@ -36,4 +36,5 @@ One line each, with the reason. HANDOFF.md is the contract; this file records wh
 ## 2026-09-11 — Selection background
 
 - **Cursor row paints a background** (owner request, 2026-09-11): theme key `selection`, `#060606` in amber and nord, off in mono. Amends HANDOFF §7 "never paint a background": the row under the accent bar is the one exception, in tables and the sidebar alike, through `ui.Cursor`. A background over a row of colored cells is cut short by each inner reset, so `ui.Cursor` re-arms it after every `ESC[m`.
+- **Network graph panels** (owner request, 2026-09-11): rates are kept per interface, 600 samples (20 min) instead of 60, so a wide terminal can fill two samples per cell. The mirrored graph draws from the left and scrolls once full; right-anchoring left a 2-minute history stranded at the far right of a 170-column frame. `enter` graphs the selected interface, `space` adds or removes it as a side-by-side panel (cap 4). Histories live in the module, not `Data`, so `--json` stays small.
 

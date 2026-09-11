@@ -18,13 +18,17 @@ var dotsR = [4]rune{0x80, 0x20, 0x10, 0x08}
 
 // Mirror renders rx (up) and tx (down) over w cells and rows lines per
 // half. Values are scaled to the larger of the two series' maxima so the
-// halves share a scale.
+// halves share a scale. Samples are drawn from the left and the graph
+// scrolls once it is full, so a short history doesn't sit at the far right.
 func Mirror(rx, tx []float64, w, rows int) string {
 	if w <= 0 || rows <= 0 {
 		return ""
 	}
 	n := w * 2 // two samples per cell
 	rx, tx = tail(rx, n), tail(tx, n)
+	if len(tx) > len(rx) {
+		rx = append(rx, make([]float64, len(tx)-len(rx))...)
+	}
 	peak := 0.0
 	for _, v := range append(append([]float64{}, rx...), tx...) {
 		peak = max(peak, v)
@@ -52,8 +56,7 @@ func tail(v []float64, n int) []float64 {
 	if len(v) > n {
 		return v[len(v)-n:]
 	}
-	out := make([]float64, n-len(v), n)
-	return append(out, v...)
+	return v
 }
 
 // half builds rows lines of braille for one direction; row 0 is nearest the

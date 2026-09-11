@@ -7,6 +7,8 @@ import (
 	"testing/fstest"
 	"time"
 
+	tea "charm.land/bubbletea/v2"
+
 	"github.com/zebadrabbit/sitrep/internal/collect"
 )
 
@@ -47,8 +49,41 @@ func TestRates(t *testing.T) {
 	m.rates(map[string][2]uint64{"eth0": {1000, 500}}, &d)
 	d2 := Data{Ifaces: []Iface{{Name: "eth0"}}, DefaultIf: "eth0", Collected: time.Unix(102, 0)}
 	m.rates(map[string][2]uint64{"eth0": {3000, 500}}, &d2)
-	if d2.Ifaces[0].RxRate != 1000 || d2.Ifaces[0].TxRate != 0 || len(m.rx) != 1 {
-		t.Errorf("rate = %+v hist=%v", d2.Ifaces[0], m.rx)
+	if h := m.hist["eth0"]; d2.Ifaces[0].RxRate != 1000 || d2.Ifaces[0].TxRate != 0 || h == nil || len(h[0]) != 1 {
+		t.Errorf("rate = %+v hist=%v", d2.Ifaces[0], m.hist)
+	}
+}
+
+func TestPanelKeys(t *testing.T) {
+	m := New(true)
+	m.ui.names, m.ui.def = []string{"eth0", "wg0", "br0"}, "eth0"
+	press := func(k string) {
+		msg := tea.KeyPressMsg{Code: tea.KeySpace, Text: " "}
+		if k == "enter" {
+			msg = tea.KeyPressMsg{Code: tea.KeyEnter}
+		}
+		m.Update(msg)
+	}
+	m.ui.sel = 1
+	press(" ")
+	m.ui.sel = 2
+	press(" ")
+	if got := m.ui.charts; len(got) != 3 || got[0] != "eth0" || got[1] != "wg0" || got[2] != "br0" {
+		t.Fatalf("space should add panels beside the default, got %v", got)
+	}
+	press(" ")
+	if got := m.ui.charts; len(got) != 2 || got[1] != "wg0" {
+		t.Fatalf("space again should remove, got %v", got)
+	}
+	m.ui.sel = 0
+	press("enter")
+	if got := m.ui.charts; len(got) != 1 || got[0] != "eth0" {
+		t.Fatalf("enter should replace, got %v", got)
+	}
+	m.hist["eth0"] = &[2][]float64{{1, 2, 3}, {3, 2, 1}}
+	out := m.panels([]string{"eth0", "wg0"}, 80, 2)
+	if !strings.Contains(out, "eth0") || !strings.Contains(out, "wg0") || strings.Count(out, "\n") != 4 {
+		t.Fatalf("two panels side by side, 5 lines: %q", out)
 	}
 }
 

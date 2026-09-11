@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -21,7 +22,11 @@ import (
 	"github.com/zebadrabbit/sitrep/internal/ui"
 )
 
-const histLen = 60
+// histLen samples at 2s: 20 min, enough to fill a wide graph two samples per cell.
+const histLen = 600
+
+// maxPanels caps side-by-side graphs. ponytail: 4 fits 80 cols; make it width-based if anyone asks.
+const maxPanels = 4
 
 // Iface is one interface.
 type Iface struct {
@@ -56,27 +61,38 @@ type Module struct {
 	demo   bool
 	prev   map[string][2]uint64
 	prevAt time.Time
-	rx, tx []float64
+	hist   map[string]*[2][]float64 // per iface: rx, tx bytes/s
 	ui     uiState
 }
 
-type uiState struct{ sel, visible int }
+type uiState struct {
+	sel    int
+	names  []string // iface names as last rendered, so keys index the same list
+	def    string   // default route iface as last rendered
+	charts []string // ifaces with a graph panel; empty = default route iface
+}
 
 func New(demo bool) *Module {
-	return &Module{run: collect.New("network", demo), demo: demo, prev: map[string][2]uint64{}}
+	return &Module{run: collect.New("network", demo), demo: demo, prev: map[string][2]uint64{}, hist: map[string]*[2][]float64{}}
 }
 
 func (*Module) ID() string              { return "network" }
 func (*Module) Title() string           { return "Network" }
 func (*Module) Flags() module.Flags     { return module.Flags{} }
 func (*Module) Interval() time.Duration { return 2 * time.Second }
-func (*Module) Keys() []key.Binding     { return nil }
+func (*Module) Keys() []key.Binding     { return keys }
+
+var keys = []key.Binding{
+	key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "graph")),
+	key.NewBinding(key.WithKeys(" "), key.WithHelp("space", "add panel")),
+}
 
 func (*Module) Info() string {
 	return `Collects: interfaces with addresses, state, kind (wireguard/tailscale/bridge/
 veth labeled), rx/tx rates from /proc/net/dev deltas, the default route and
-gateway, DNS servers. The default-route interface gets a 60-sample mirrored
-braille graph: rx up, tx down.
+gateway, DNS servers. A mirrored braille graph (rx up, tx down) of the last
+20 minutes for the default-route interface; enter graphs the selected
+interface instead, space adds or removes it as a side-by-side panel.
 Needs:    /proc/net/dev, ip (iproute2). No root.
 Execs:    ip -j addr, ip -j route, ip -d -j link. Reads /etc/resolv.conf.
 Interval: 2s.`
@@ -99,10 +115,33 @@ func (m *Module) Update(msg tea.Msg) tea.Cmd {
 			m.ui.sel++
 		case "k", "up":
 			m.ui.sel--
+		case "enter":
+			if m.ui.sel < len(m.ui.names) {
+				m.ui.charts = []string{m.ui.names[m.ui.sel]}
+			}
+		case "space":
+			if m.ui.sel < len(m.ui.names) {
+				if len(m.ui.charts) == 0 && m.ui.def != "" {
+					m.ui.charts = []string{m.ui.def} // keep the implicit default panel
+				}
+				m.ui.charts = toggle(m.ui.charts, m.ui.names[m.ui.sel])
+			}
 		}
-		m.ui.sel = max(0, min(m.ui.sel, m.ui.visible-1))
+		m.ui.sel = max(0, min(m.ui.sel, len(m.ui.names)-1))
 	}
 	return nil
+}
+
+func toggle(list []string, name string) []string {
+	for i, n := range list {
+		if n == name {
+			return append(list[:i:i], list[i+1:]...)
+		}
+	}
+	if len(list) >= maxPanels {
+		return list
+	}
+	return append(list, name)
 }
 
 // ip -j addr shapes.
@@ -257,7 +296,9 @@ func (m *Module) Collect(ctx context.Context) (module.Data, error) {
 		}
 	}
 	sort.SliceStable(d.Ifaces, func(i, j int) bool { return rank(d.Ifaces[i]) < rank(d.Ifaces[j]) })
-	d.RxHist, d.TxHist = append([]float64(nil), m.rx...), append([]float64(nil), m.tx...)
+	if h := m.hist[d.DefaultIf]; h != nil {
+		d.RxHist, d.TxHist = append([]float64(nil), h[0]...), append([]float64(nil), h[1]...)
+	}
 	return d, nil
 }
 
@@ -265,8 +306,8 @@ func (m *Module) Collect(ctx context.Context) (module.Data, error) {
 // come out stable (a demo has one counter sample, so rates are 0 anyway).
 func (m *Module) now() time.Time { return time.Now() }
 
-// rates turns counter deltas into bytes/s and pushes the default iface's
-// into the ring buffers.
+// rates turns counter deltas into bytes/s and pushes every iface's into its
+// ring buffer.
 func (m *Module) rates(cur map[string][2]uint64, d *Data) {
 	dt := d.Collected.Sub(m.prevAt).Seconds()
 	for i := range d.Ifaces {
@@ -280,9 +321,18 @@ func (m *Module) rates(cur map[string][2]uint64, d *Data) {
 			in.RxRate = float64(c[0]-p[0]) / dt
 			in.TxRate = float64(c[1]-p[1]) / dt
 		}
-		if in.Name == d.DefaultIf && !m.prevAt.IsZero() {
-			m.rx = push(m.rx, in.RxRate)
-			m.tx = push(m.tx, in.TxRate)
+		if !m.prevAt.IsZero() {
+			h := m.hist[in.Name]
+			if h == nil {
+				h = &[2][]float64{}
+				m.hist[in.Name] = h
+			}
+			h[0], h[1] = push(h[0], in.RxRate), push(h[1], in.TxRate)
+		}
+	}
+	for name := range m.hist {
+		if _, ok := cur[name]; !ok {
+			delete(m.hist, name)
 		}
 	}
 	m.prev, m.prevAt = cur, d.Collected
@@ -352,19 +402,27 @@ func (m *Module) View(d module.Data, w, h int) string {
 	if nd.Fallback {
 		head = s.Warn.Render(s.Glyph.Degraded+" ip missing (iproute2): names and counters only") + "   " + kv("dns", strings.Join(nd.DNS, ", "))
 	}
+	charts := m.ui.charts
+	if len(charts) == 0 && nd.DefaultIf != "" {
+		charts = []string{nd.DefaultIf}
+	}
 	rows := [][]string{}
+	m.ui.names, m.ui.def = m.ui.names[:0], nd.DefaultIf
 	for _, in := range nd.Ifaces {
 		g := s.Dim.Render(s.Glyph.Fail)
 		if in.State == "up" || in.State == "unknown" && in.Kind != "loopback" {
 			g = s.OK.Render(s.Glyph.OK)
 		}
 		name := in.Name
-		if in.Default {
+		switch {
+		case slices.Contains(charts, in.Name):
+			name = s.Accent.Render(name)
+		case in.Default:
 			name = s.Bold.Render(name)
 		}
 		rows = append(rows, []string{g + " " + name, s.Dim.Render(in.Kind), strings.Join(in.Addrs, " "), "↓" + rate(in.RxRate), "↑" + rate(in.TxRate)})
+		m.ui.names = append(m.ui.names, in.Name)
 	}
-	m.ui.visible = len(rows)
 	if m.ui.sel >= len(rows) {
 		m.ui.sel = max(0, len(rows)-1)
 	}
@@ -395,8 +453,7 @@ func (m *Module) View(d module.Data, w, h int) string {
 	if hidden := len(rows) - (hi - lo); hidden > 0 {
 		out = append(out, s.Dim.Render(fmt.Sprintf("  … %d more", hidden)))
 	}
-	out = append(out, "", s.Bold.Render(nd.DefaultIf)+"  "+s.OK.Render("▲ rx")+" "+s.Accent.Render("▼ tx")+"  "+s.Dim.Render(peakStr(nd)))
-	out = append(out, ui.Mirror(nd.RxHist, nd.TxHist, max(10, w-2), graphRows))
+	out = append(out, "", m.panels(charts, w-1, graphRows))
 	res := strings.Join(out, "\n")
 	if h > 0 {
 		res = strings.Join(strings.Split(res, "\n")[:min(h, strings.Count(res, "\n")+1)], "\n")
@@ -404,12 +461,29 @@ func (m *Module) View(d module.Data, w, h int) string {
 	return res
 }
 
-func peakStr(nd Data) string {
+// panels lays one titled graph per charted iface side by side.
+func (m *Module) panels(charts []string, w, rows int) string {
+	s := theme.Current()
+	colW := max(10, w/max(1, len(charts)))
+	blocks := make([]string, 0, len(charts))
+	for _, name := range charts {
+		var rx, tx []float64
+		if h := m.hist[name]; h != nil {
+			rx, tx = h[0], h[1]
+		}
+		title := s.Bold.Render(name) + "  " + s.OK.Render("▲ rx") + " " + s.Accent.Render("▼ tx") + "  " + s.Dim.Render(peakStr(rx, tx))
+		blocks = append(blocks, title+"\n"+ui.Mirror(rx, tx, colW-1, rows))
+	}
+	return ui.Columns(blocks, len(blocks), w)
+}
+
+func peakStr(rx, tx []float64) string {
 	p := 0.0
-	for _, v := range append(append([]float64{}, nd.RxHist...), nd.TxHist...) {
+	for _, v := range append(append([]float64{}, rx...), tx...) {
 		p = max(p, v)
 	}
-	return "peak " + rate(p) + " · last 2 min"
+	span := time.Duration(len(rx)) * 2 * time.Second
+	return "peak " + rate(p) + " · last " + ui.Age(span)
 }
 
 func kv(k, v string) string { return theme.Current().Dim.Render(k+" ") + v }
