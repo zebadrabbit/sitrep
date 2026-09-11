@@ -135,9 +135,10 @@ func (m Model) key(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	case "r":
 		return m, m.refresh()
 	}
-	if len(s) == 1 && s[0] >= '0' && s[0] <= '9' {
+	// Digits, then per-module letters past the tenth tab (see module.Resolve).
+	if len(s) == 1 {
 		for i, ti := range m.tabs {
-			if m.entries[ti].Hotkey == rune(s[0]) {
+			if hk := m.entries[ti].Hotkey; hk != 0 && hk == rune(s[0]) {
 				m.active = i
 				return m, nil
 			}
@@ -366,7 +367,7 @@ func (m Model) helpOverlay(w, h int) string {
 	s := theme.Current()
 	rows := []string{
 		s.Bold.Render("keys"),
-		ui.Hotkey("1-9,0", "  jump to tab"),
+		ui.Hotkey("1-9,0", "  jump to tab   ") + ui.Hotkey("letter", "  tabs past ten (shown in sidebar)"),
 		ui.Hotkey("tab", "/") + ui.Hotkey("shift-tab", "  next / prev tab"),
 		ui.Hotkey("j/k ↑/↓", "  move selection"),
 		ui.Hotkey("enter", "  open detail   ") + ui.Hotkey("esc", "  back"),

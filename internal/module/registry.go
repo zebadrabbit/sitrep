@@ -3,6 +3,7 @@ package module
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/zebadrabbit/sitrep/internal/config"
 	"github.com/zebadrabbit/sitrep/internal/detect"
@@ -31,6 +32,7 @@ func Resolve(ctx context.Context, env detect.Env, cfg config.Config) []Entry {
 	entries := make([]Entry, 0, len(registry))
 	hot := []rune("1234567890")
 	n := 0
+	used := map[rune]bool{}
 	for _, m := range registry {
 		e := Entry{Module: m, Avail: m.Detect(ctx, env)}
 		if m.Flags().ApplianceSensitive && env.Appliance != "" && !cfg.Acked(m.ID()) &&
@@ -38,13 +40,33 @@ func Resolve(ctx context.Context, env detect.Env, cfg config.Config) []Entry {
 			e.Avail = Availability{State: NeedsAck, Reason: fmt.Sprintf("%s detected — `sitrep modules enable %s` to acknowledge", env.Appliance, m.ID())}
 		}
 		e.Enabled = enabled(m, e.Avail, env, cfg)
-		if e.Enabled && n < len(hot) {
+		switch {
+		case !e.Enabled:
+		case n < len(hot):
 			e.Hotkey = hot[n]
 			n++
+		default:
+			e.Hotkey = letterHotkey(m.Title(), used)
 		}
+		used[e.Hotkey] = true
 		entries = append(entries, e)
 	}
 	return entries
+}
+
+// reservedKeys are global or tab-local bindings a hotkey must not shadow.
+const reservedKeys = "qrjkgGsplcaL?/"
+
+// letterHotkey picks the first letter of title not reserved or already used,
+// for tabs past the tenth. 0 when nothing is free (tab still reaches it).
+func letterHotkey(title string, used map[rune]bool) rune {
+	for _, r := range strings.ToLower(title) {
+		if r < 'a' || r > 'z' || used[r] || strings.ContainsRune(reservedKeys, r) {
+			continue
+		}
+		return r
+	}
+	return 0
 }
 
 func enabled(m Module, a Availability, env detect.Env, cfg config.Config) bool {

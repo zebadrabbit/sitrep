@@ -39,3 +39,20 @@ func TestOneShotOrder(t *testing.T) {
 		t.Errorf("order = %q", ids)
 	}
 }
+
+func TestLetterHotkeys(t *testing.T) {
+	used := map[rune]bool{}
+	if k := letterHotkey("Logs", used); k != 'l' {
+		t.Errorf("Logs → %q, want l", k)
+	}
+	used['l'] = true
+	if k := letterHotkey("Lists", used); k != 'i' {
+		t.Errorf("Lists with l taken → %q, want i", k)
+	}
+	if k := letterHotkey("Samba", used); k != 'm' { // s and a are reserved
+		t.Errorf("Samba → %q, want m", k)
+	}
+	if k := letterHotkey("qrs", used); k != 0 {
+		t.Errorf("all reserved → %q, want 0", k)
+	}
+}
