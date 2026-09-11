@@ -75,8 +75,11 @@ func New(o Options) Model {
 // Once collects every module synchronously and renders one frame. Used by
 // --once for screenshots and scripts; the TUI never blocks like this.
 func (m Model) Once(w, h int) string {
+	enabled := make([]module.Entry, 0, len(m.tabs))
 	for _, ti := range m.tabs {
-		e := m.entries[ti]
+		enabled = append(enabled, m.entries[ti])
+	}
+	for _, e := range module.OneShotOrder(enabled) {
 		if e.Module.Interval() == 0 {
 			continue
 		}

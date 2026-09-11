@@ -306,7 +306,9 @@ func cellsFor(d disp) []string {
 	proc, user, age := s.Warn.Render(g.Degraded), s.Warn.Render(g.Degraded), s.Warn.Render(g.Degraded)
 	if r.Process != "" {
 		proc = clip(r.Process, 12) + " (" + strconv.Itoa(r.PID) + ")"
-		if r.Identity.Source == SrcDocker {
+		if r.Container != "" {
+			proc = "docker" + g.Sep + clip(r.Container, 17)
+		} else if r.Identity.Source == SrcDocker {
 			proc = "docker" + g.Sep + "?"
 		}
 	}
@@ -378,7 +380,7 @@ func (m *Module) detailView(r Row, w, h int) string {
 		kv("process", val(r.Process)) + "   " + kv("pid/ppid", fmt.Sprintf("%d/%d", r.PID, r.PPID)) + "   " + kv("user", val(r.User)),
 		kv("cmdline", val(d.Cmdline)),
 		kv("exe", val(d.Exe)) + "   " + kv("cwd", val(d.Cwd)),
-		kv("unit", val(d.Unit)) + "   " + kv("container", s.Dim.Render("phase 2")),
+		kv("unit", val(d.Unit)) + "   " + kv("container", containerStr(r)),
 		kv("cpu", fmt.Sprintf("%.1f%%", d.CPU)) + "   " + kv("rss", ui.Bytes(d.RSS)) + "   " + kv("threads", strconv.Itoa(d.Threads)) + "   " + kv("fds", fds),
 		kv("since", sinceStr(r)),
 		kv("running", sourceStr(r)),
@@ -409,6 +411,13 @@ func (m *Module) detailView(r Row, w, h int) string {
 }
 
 func kv(k, v string) string { return theme.Current().Dim.Render(k+" ") + v }
+
+func containerStr(r Row) string {
+	if r.Container == "" {
+		return theme.Current().Dim.Render("none")
+	}
+	return r.Container + "  " + theme.Current().Dim.Render(r.Image)
+}
 
 func sinceStr(r Row) string {
 	if r.Since.IsZero() {

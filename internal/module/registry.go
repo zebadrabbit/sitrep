@@ -80,3 +80,31 @@ func Lookup(id string) (Module, bool) {
 	}
 	return nil, false
 }
+
+// OneShotOrder returns entries reordered so every module's After deps come
+// first. Display order is otherwise preserved. Cycles are not handled: don't
+// make any.
+func OneShotOrder(entries []Entry) []Entry {
+	out := make([]Entry, 0, len(entries))
+	done := map[string]bool{}
+	var add func(e Entry)
+	add = func(e Entry) {
+		id := e.Module.ID()
+		if done[id] {
+			return
+		}
+		done[id] = true
+		for _, dep := range e.Module.Flags().After {
+			for _, x := range entries {
+				if x.Module.ID() == dep {
+					add(x)
+				}
+			}
+		}
+		out = append(out, e)
+	}
+	for _, e := range entries {
+		add(e)
+	}
+	return out
+}

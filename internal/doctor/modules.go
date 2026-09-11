@@ -57,7 +57,7 @@ func detection(env detect.Env, entries []module.Entry) Section {
 func modulesSection(ctx context.Context, entries []module.Entry) (Section, map[string]module.Data) {
 	var cs []Check
 	data := map[string]module.Data{}
-	for _, e := range entries {
+	for _, e := range module.OneShotOrder(entries) {
 		m := e.Module
 		if m.Interval() == 0 {
 			continue

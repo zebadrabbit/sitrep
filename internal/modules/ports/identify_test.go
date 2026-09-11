@@ -23,6 +23,9 @@ func TestResolveOrder(t *testing.T) {
 		http      bool
 	}{
 		{Listener{Proto: "tcp", Port: 3000, Process: "docker-proxy"}, "container", SrcDocker, true},
+		{Listener{Proto: "tcp", Port: 3000, Process: "docker-proxy", Container: "planka-planka-1", Image: "ghcr.io/plankanban/planka:2.1.1"}, "planka", SrcDocker, true},
+		{Listener{Proto: "tcp", Port: 5434, Process: "docker-proxy", Container: "db", Image: "postgres:16"}, "postgres", SrcDocker, false},
+		{Listener{Proto: "tcp", Port: 8888, Process: "docker-proxy", Container: "portainer", Image: "be26dc26896a"}, "portainer", SrcDocker, true},
 		{Listener{Proto: "tcp", Port: 2222, Process: "sshd"}, "ssh", SrcProcess, false},
 		{Listener{Proto: "tcp", Port: 80, Process: "nginx"}, "nginx", SrcProcess, true},
 		{Listener{Proto: "tcp6", Port: 8096, Process: ""}, "jellyfin", SrcPortTable, true},

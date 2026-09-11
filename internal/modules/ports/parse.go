@@ -16,6 +16,9 @@ type Listener struct {
 	PID     int    // 0 when ss could not see the owner (needs root)
 	Process string // comm of the owning process, "" when unknown
 	Cmdline string // filled from /proc by the collector; helps the heuristic
+	// Container and Image are set by the collector from the docker module,
+	// via published port (docker-proxy) or the process cgroup (host network).
+	Container, Image string
 }
 
 // Established is one row of `ss -tunaH` in a non-listening state.

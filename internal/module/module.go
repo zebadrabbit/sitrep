@@ -39,6 +39,10 @@ type Flags struct {
 	ApplianceSensitive bool // off until acked on an appliance
 	Slow               bool // 10s collect timeout instead of 2s
 	NeedsRootForFull   bool // some fields show ◐ unprivileged
+	// After lists modules whose data this one consumes (ports reads docker's
+	// port map). One-shot paths (--once, snapshot, doctor) collect in that
+	// order; the TUI ignores it because the next tick heals it.
+	After []string
 }
 
 // Data is whatever a module's Collect returns. Views type-assert it.

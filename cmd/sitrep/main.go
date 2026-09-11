@@ -106,11 +106,22 @@ func runTUI(cmd *cobra.Command, args []string) error {
 }
 
 // runOneShot is `sitrep <module> [--json]`: collect once, print, exit.
+// Modules the target depends on (ports → docker) are collected first.
 func runOneShot(cmd *cobra.Command, id string) error {
-	resolve()
+	entries, _ := resolve()
 	m, ok := module.Lookup(id)
 	if !ok || m.Interval() == 0 {
 		return fmt.Errorf("unknown module %q (see `sitrep modules list`)", id)
+	}
+	for _, e := range module.OneShotOrder(entries) {
+		if e.Module.ID() == id {
+			break
+		}
+		if e.Enabled && e.Module.Interval() > 0 && contains(m.Flags().After, e.Module.ID()) {
+			ctx, cancel := context.WithTimeout(context.Background(), module.Timeout(e.Module))
+			_, _ = e.Module.Collect(ctx)
+			cancel()
+		}
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), module.Timeout(m))
 	defer cancel()
@@ -128,6 +139,15 @@ func runOneShot(cmd *cobra.Command, id string) error {
 	return nil
 }
 
+func contains(xs []string, s string) bool {
+	for _, x := range xs {
+		if x == s {
+			return true
+		}
+	}
+	return false
+}
+
 func snapshotCmd() *cobra.Command {
 	var out string
 	c := &cobra.Command{
@@ -136,7 +156,7 @@ func snapshotCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			entries, _ := resolve()
 			snap := map[string]any{}
-			for _, e := range entries {
+			for _, e := range module.OneShotOrder(entries) {
 				if !e.Enabled || e.Module.Interval() == 0 {
 					continue
 				}

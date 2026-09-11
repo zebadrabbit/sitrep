@@ -26,6 +26,9 @@ func groupKey(r Row) string {
 	if r.Process != "" {
 		who = r.Process
 	}
+	if r.Container != "" {
+		who = "docker▸" + r.Container // every docker-proxy shares a name; the container is the identity
+	}
 	return strings.TrimSuffix(r.Proto, "6") + ":" + strconv.Itoa(r.Port) + ":" + who
 }
 

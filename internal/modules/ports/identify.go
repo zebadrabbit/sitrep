@@ -91,8 +91,15 @@ func newResolver(userDir string, services []byte) (*resolver, error) {
 // Resolve runs the layers in order; first hit wins.
 func (r *resolver) Resolve(l Listener) Identity {
 	base := strings.TrimSuffix(l.Proto, "6")
-	// TODO(phase 2): docker module feeds container name + image here.
+	if l.Container != "" {
+		name := shortImage(l.Image)
+		if isHexID(name) {
+			name = l.Container // image tag was pruned; the container name says more than a digest
+		}
+		return Identity{Name: name, Source: SrcDocker, HTTP: r.httpish(base, l.Port)}
+	}
 	if l.Process == "docker-proxy" {
+		// Docker module absent or not yet collected.
 		return Identity{Name: "container", Source: SrcDocker, HTTP: true}
 	}
 	if n, ok := processTable[l.Process]; ok {
@@ -109,6 +116,41 @@ func (r *resolver) Resolve(l Listener) Identity {
 		return ident(n, SrcServices)
 	}
 	return heuristic(l)
+}
+
+// httpish consults the port table for the probe's sake when the identity
+// came from somewhere else (a container image name says nothing about HTTP).
+func (r *resolver) httpish(base string, port int) bool {
+	tbl := r.ports.TCP
+	if base == "udp" {
+		tbl = r.ports.UDP
+	}
+	n, ok := tbl[strconv.Itoa(port)]
+	return ok && strings.HasSuffix(n, "(http)") || port == 80 || port == 443 || port == 8080
+}
+
+// isHexID is true for untagged image references like 2d6f675dbf56.
+func isHexID(s string) bool {
+	if len(s) < 12 {
+		return false
+	}
+	for _, c := range s {
+		if !strings.ContainsRune("0123456789abcdef", c) {
+			return false
+		}
+	}
+	return true
+}
+
+// shortImage strips registry and tag: ghcr.io/plankanban/planka:2.1.1 → planka.
+func shortImage(img string) string {
+	if i := strings.LastIndex(img, "/"); i >= 0 {
+		img = img[i+1:]
+	}
+	if i := strings.IndexAny(img, ":@"); i >= 0 {
+		img = img[:i]
+	}
+	return img
 }
 
 func ident(n, src string) Identity {

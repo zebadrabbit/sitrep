@@ -25,22 +25,24 @@ const newWindow = 60 * time.Second
 
 // Row is one listener, enriched.
 type Row struct {
-	Proto    string        `json:"proto"`
-	Addr     string        `json:"addr"`
-	Port     int           `json:"port"`
-	PID      int           `json:"pid"`
-	PPID     int           `json:"ppid,omitempty"`
-	Process  string        `json:"process"`
-	User     string        `json:"user"`
-	Since    time.Time     `json:"since"`
-	Age      time.Duration `json:"age"`
-	Conn     int           `json:"conn"`
-	Identity Identity      `json:"identity"`
-	Loopback bool          `json:"loopback"`
-	New      bool          `json:"new"`
-	Gone     bool          `json:"gone,omitempty"`
-	Detail   Detail        `json:"detail"`
-	Peers    []Peer        `json:"peers,omitempty"`
+	Proto     string        `json:"proto"`
+	Addr      string        `json:"addr"`
+	Port      int           `json:"port"`
+	PID       int           `json:"pid"`
+	PPID      int           `json:"ppid,omitempty"`
+	Process   string        `json:"process"`
+	User      string        `json:"user"`
+	Since     time.Time     `json:"since"`
+	Age       time.Duration `json:"age"`
+	Conn      int           `json:"conn"`
+	Identity  Identity      `json:"identity"`
+	Container string        `json:"container,omitempty"`
+	Image     string        `json:"image,omitempty"`
+	Loopback  bool          `json:"loopback"`
+	New       bool          `json:"new"`
+	Gone      bool          `json:"gone,omitempty"`
+	Detail    Detail        `json:"detail"`
+	Peers     []Peer        `json:"peers,omitempty"`
 }
 
 // Detail is the per-process data shown on enter.
@@ -80,10 +82,18 @@ type Data struct {
 
 // Module state that persists across collections: first-seen times for the
 // `+` marker, the previous row set for strikethrough, and UI state.
+// ContainerRef is what the docker module tells us about a listener.
+type ContainerRef struct {
+	Name, Image string
+}
+
 type Module struct {
-	run     *collect.Runner
-	demo    bool
-	res     *resolver
+	run  *collect.Runner
+	demo bool
+	res  *resolver
+	// Wired by the app when the docker module is enabled.
+	byPort  func(proto string, port int) (ContainerRef, bool)
+	byID    func(id string) (ContainerRef, bool)
 	started time.Time
 	seen    map[string]time.Time
 	prev    map[string]Row
@@ -96,9 +106,16 @@ func New(demo bool) *Module {
 	return &Module{run: collect.New("ports", demo), demo: demo, started: time.Now(), seen: map[string]time.Time{}}
 }
 
-func (*Module) ID() string              { return "ports" }
-func (*Module) Title() string           { return "Ports" }
-func (*Module) Flags() module.Flags     { return module.Flags{NeedsRootForFull: true} }
+// SetContainerLookup wires the docker module in. Either func may be nil.
+func (m *Module) SetContainerLookup(byPort func(string, int) (ContainerRef, bool), byID func(string) (ContainerRef, bool)) {
+	m.byPort, m.byID = byPort, byID
+}
+
+func (*Module) ID() string    { return "ports" }
+func (*Module) Title() string { return "Ports" }
+func (*Module) Flags() module.Flags {
+	return module.Flags{NeedsRootForFull: true, After: []string{"docker"}}
+}
 func (*Module) Interval() time.Duration { return 3 * time.Second }
 
 func (*Module) Info() string {
@@ -248,7 +265,10 @@ func (m *Module) row(ctx context.Context, l Listener, boot, now time.Time) Row {
 	if l.PID != 0 {
 		l.Cmdline = m.run.ProcCmdline(l.PID)
 		r.Detail.Cmdline = l.Cmdline
+		r.Detail.Unit = m.run.ProcCgroup(l.PID)
 	}
+	m.container(&l, r.Detail.Unit)
+	r.Container, r.Image = l.Container, l.Image
 	r.Identity = m.res.Resolve(l)
 	if l.PID == 0 {
 		return r
@@ -259,7 +279,6 @@ func (m *Module) row(ctx context.Context, l Listener, boot, now time.Time) Row {
 	if uid, err := m.run.ProcUID(l.PID); err == nil {
 		r.User = collect.Username(uid)
 	}
-	r.Detail.Unit = m.run.ProcCgroup(l.PID)
 	r.Detail.Cwd, _ = m.run.Readlink(fmt.Sprintf("/proc/%d/cwd", l.PID))
 	r.Detail.Exe, _ = m.run.Readlink(fmt.Sprintf("/proc/%d/exe", l.PID))
 	r.PPID, r.Detail.Threads = m.procStatus(l.PID)
@@ -325,6 +344,25 @@ func scriptPath(cmdline, cwd string) string {
 		return a
 	}
 	return ""
+}
+
+// container fills l.Container from the docker module: docker-proxy rows by
+// published port, anything else by the docker-<id>.scope in its cgroup.
+func (m *Module) container(l *Listener, cgroup string) {
+	if l.Process == "docker-proxy" && m.byPort != nil {
+		if ref, ok := m.byPort(l.Proto, l.Port); ok {
+			l.Container, l.Image = ref.Name, ref.Image
+		}
+		return
+	}
+	if m.byID == nil {
+		return
+	}
+	if id, ok := strings.CutPrefix(cgroup, "docker-"); ok {
+		if ref, ok := m.byID(strings.TrimSuffix(id, ".scope")); ok {
+			l.Container, l.Image = ref.Name, ref.Image
+		}
+	}
 }
 
 // procStatus pulls PPid and Threads from /proc/<pid>/status.
