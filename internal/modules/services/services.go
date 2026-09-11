@@ -244,11 +244,11 @@ func (m *Module) View(d module.Data, w, h int) string {
 	lines := strings.Split(table, "\n")
 	lines[0] = " " + lines[0]
 	for i := range lines[1:] {
-		cursor := " "
 		if h > 0 && lo+i == m.ui.sel {
-			cursor = s.Accent.Render("▎")
+			lines[i+1] = ui.Cursor(lines[i+1], w)
+		} else {
+			lines[i+1] = " " + lines[i+1]
 		}
-		lines[i+1] = cursor + lines[i+1]
 	}
 	status := fmt.Sprintf("%d failed · %d active · %d inactive", sd.Failed, sd.Active, sd.Inactive)
 	if hidden > 0 {

@@ -6,4 +6,5 @@ warn   = "#EBCB8B"
 crit   = "#BF616A"
 dim    = "#4C566A"
 port   = "#B48EAD"
+selection = "#060606" # cursor-row background, the one background sitrep paints
 ascii  = false

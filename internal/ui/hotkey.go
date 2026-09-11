@@ -1,7 +1,13 @@
 // Package ui holds shared widgets. Colors come from theme, never from here.
 package ui
 
-import "github.com/zebadrabbit/sitrep/internal/theme"
+import (
+	"strings"
+
+	"charm.land/lipgloss/v2"
+
+	"github.com/zebadrabbit/sitrep/internal/theme"
+)
 
 // Hotkey renders "k" + rest with theme.Hotkey on the key only ("q" + "uit" → quit).
 func Hotkey(key, rest string) string {
@@ -20,4 +26,21 @@ func Check(glyph string) string {
 		return s.Warn.Render(glyph)
 	}
 	return glyph
+}
+
+// Cursor marks line as the selected row: accent bar on the left, theme.Sel
+// background across the full width w. The one background sitrep paints.
+func Cursor(line string, w int) string {
+	s := theme.Current()
+	line = s.Accent.Render("▎") + line
+	if pad := w - lipgloss.Width(line); pad > 0 {
+		line += strings.Repeat(" ", pad)
+	}
+	out := s.Sel.Render(line)
+	// Nested styles end in a reset that also drops our background; re-arm it after each one.
+	if bg, _, ok := strings.Cut(s.Sel.Render(" "), " "); ok && bg != "" {
+		const reset = "\x1b[m"
+		out = strings.ReplaceAll(strings.TrimSuffix(out, reset), reset, reset+bg) + reset
+	}
+	return out
 }

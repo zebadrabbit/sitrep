@@ -1,8 +1,13 @@
 package ui
 
 import (
+	"strings"
 	"testing"
 	"time"
+
+	"charm.land/lipgloss/v2"
+
+	"github.com/zebadrabbit/sitrep/internal/theme"
 )
 
 func TestAge(t *testing.T) {
@@ -27,5 +32,23 @@ func TestSparklineWidth(t *testing.T) {
 func TestBytes(t *testing.T) {
 	if got := Bytes(1536 * 1024 * 1024); got != "1.5G" {
 		t.Errorf("got %q", got)
+	}
+}
+
+func TestCursorBackgroundSurvivesInnerReset(t *testing.T) {
+	inner := "a " + theme.Current().Port.Render("22") + " b"
+	got := Cursor(inner, 12)
+	if w := lipgloss.Width(got); w != 12 {
+		t.Fatalf("width %d, want 12: %q", w, got)
+	}
+	bg, _, _ := strings.Cut(theme.Current().Sel.Render(" "), " ")
+	if bg == "" {
+		t.Skip("theme has no selection color")
+	}
+	if i := strings.LastIndex(got, " b"); !strings.Contains(got[:i], "\x1b[m"+bg) {
+		t.Fatalf("background not re-armed after inner reset: %q", got)
+	}
+	if !strings.HasSuffix(got, "\x1b[m") || strings.HasSuffix(got, bg+"\x1b[m") {
+		t.Fatalf("bad tail: %q", got)
 	}
 }

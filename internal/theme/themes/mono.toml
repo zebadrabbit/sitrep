@@ -6,4 +6,5 @@ warn   = ""
 crit   = ""
 dim    = ""
 port   = ""
+selection = ""
 ascii  = false

@@ -28,7 +28,9 @@ type Theme struct {
 	Crit   string `toml:"crit"`
 	Dim    string `toml:"dim"`
 	Port   string `toml:"port"` // port numbers; empty = bold only
-	ASCII  bool   `toml:"ascii"`
+	// Selection is the cursor-row background, the one background sitrep paints. Empty = none.
+	Selection string `toml:"selection"`
+	ASCII     bool   `toml:"ascii"`
 }
 
 // Glyphs is the complete allowed status glyph set (HANDOFF §7).
@@ -47,7 +49,9 @@ type Styles struct {
 	// Hotkey is the one style for hotkey characters, everywhere (HANDOFF §10.6).
 	Hotkey lipgloss.Style
 	// Port colors port numbers so they can be picked out of a row at a glance.
-	Port  lipgloss.Style
+	Port lipgloss.Style
+	// Sel is the cursor-row background; see ui.Cursor.
+	Sel   lipgloss.Style
 	Glyph Glyphs
 }
 
@@ -151,6 +155,9 @@ func (t Theme) styles() Styles {
 	s.Bold = lipgloss.NewStyle().Bold(true)
 	s.Port = fg(t.Port).Bold(true)
 	s.Hotkey = fg(t.Accent).Bold(true).Underline(t.Accent == "")
+	if t.Selection != "" {
+		s.Sel = lipgloss.NewStyle().Background(lipgloss.Color(t.Selection))
+	}
 	return s
 }
 

@@ -225,7 +225,7 @@ No emoji. No spinners beyond a 4-frame braille spinner in the header while colle
 ### Branding
 
 - Header wordmark: `sitrep` in accent, then `▸ <hostname>` in normal text. That's the whole logo. No ASCII art banner (it costs 5 lines everywhere; put it in the README gif instead).
-- Default theme `amber`: accent `#F5A623`, ok `#7CB342`, warn `#F5A623`, crit `#E53935`, dim `#6B6B6B`, fg terminal default, bg terminal default (never paint a background — respects the user's terminal).
+- Default theme `amber`: accent `#F5A623`, ok `#7CB342`, warn `#F5A623`, crit `#E53935`, dim `#6B6B6B`, fg terminal default, bg terminal default (the cursor row's `selection` `#060606` is the only background ever painted — everything else respects the user's terminal).
 - Ship 3 themes: `amber` (default), `mono` (no color; bold/dim only, for `TERM=dumb`/screenshots), `nord`-ish. Theme file documented in `docs/THEMING.md`.
 - README gets a `vhs` tape (`docs/demo.tape`) rendering `sitrep --demo` so the gif is reproducible.
 

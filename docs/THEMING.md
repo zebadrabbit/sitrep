@@ -19,13 +19,15 @@ warn   = "#F5A623"   # ◐ ! and 85% bars
 crit   = "#E53935"   # ○ !! and 95% bars
 dim    = "#6B6B6B"   # secondary text, borders, inactive rows
 port   = "#4DD0E1"   # port numbers in the Ports tab
+selection = "#060606" # cursor-row background; the only one sitrep paints
 ascii  = false       # true swaps ● ○ ◐ ▸ for * o ~ >
 ```
 
 Every color is a hex string. Leave one empty (`""`) for the terminal's
 default foreground; `mono` does that for all of them and relies on bold and
-faint. There is no background key on purpose: sitrep never paints a
-background, so your terminal's stays.
+faint. There is no page background key on purpose: sitrep leaves your
+terminal's. `selection` is the one background it paints, under the cursor
+row next to the accent bar; empty turns it off.
 
 A user file with the same name as a builtin overrides it. Partial files are
 fine: unspecified keys fall back to the terminal default, not to the builtin,

@@ -32,3 +32,8 @@ One line each, with the reason. HANDOFF.md is the contract; this file records wh
 - **nord theme, `theme set`, `config edit`.** `config edit` is the one `exec` outside `collect.Run`: it launches the user's `$EDITOR` on the user's config file, which is not collection.
 - **Network without iproute2** reads names and counters from `/proc/net/dev`, no addresses or routes. Found by running `doctor` in bare `debian:stable-slim`; invariant 4 needs Network to show.
 - **README gif not committed.** `docs/demo.tape` and `make gif` are in; on pandalab vhs 0.12 captures zero frames (headless Chromium starts, ttyd runs, no screenshots land), so the gif is rendered elsewhere or not at all. Not worth more of the lab box's time.
+
+## 2026-09-11 — Selection background
+
+- **Cursor row paints a background** (owner request, 2026-09-11): theme key `selection`, `#060606` in amber and nord, off in mono. Amends HANDOFF §7 "never paint a background": the row under the accent bar is the one exception, in tables and the sidebar alike, through `ui.Cursor`. A background over a row of colored cells is cut short by each inner reset, so `ui.Cursor` re-arms it after every `ESC[m`.
+

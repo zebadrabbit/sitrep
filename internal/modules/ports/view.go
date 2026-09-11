@@ -253,17 +253,16 @@ func (m *Module) listView(rows []disp, total, w, h int, fallback bool) string {
 	lines[0] = " " + lines[0]
 	for i := range lines[1:] {
 		d := rows[lo+i]
-		cursor := " "
-		if h > 0 && lo+i == m.ui.sel {
-			cursor = s.Accent.Render("▎")
-		}
 		switch {
 		case d.Row.Gone:
-			lines[i+1] = cursor + s.Dim.Strikethrough(true).Render(stripANSI(lines[i+1]))
+			lines[i+1] = s.Dim.Strikethrough(true).Render(stripANSI(lines[i+1]))
 		case d.Row.Loopback, d.Member:
-			lines[i+1] = cursor + s.Dim.Render(stripANSI(lines[i+1]))
-		default:
-			lines[i+1] = cursor + lines[i+1]
+			lines[i+1] = s.Dim.Render(stripANSI(lines[i+1]))
+		}
+		if h > 0 && lo+i == m.ui.sel {
+			lines[i+1] = ui.Cursor(lines[i+1], w)
+		} else {
+			lines[i+1] = " " + lines[i+1]
 		}
 	}
 	status := fmt.Sprintf("%d listeners", total)

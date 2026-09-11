@@ -254,12 +254,14 @@ func (m Model) sidebar() string {
 	var b strings.Builder
 	for i, ti := range m.tabs {
 		e := m.entries[ti]
-		line := " " + ui.Hotkey(hotkey(e), " "+e.Module.Title())
-		if i == m.active {
-			line = s.Accent.Render("▎") + line[1:]
-		}
+		line := ui.Hotkey(hotkey(e), " "+e.Module.Title())
 		if sl := m.store[e.Module.ID()]; sl != nil && sl.err != nil {
 			line += " " + s.Warn.Render(s.Glyph.Warn)
+		}
+		if i == m.active {
+			line = ui.Cursor(line, sidebarW)
+		} else {
+			line = " " + line
 		}
 		b.WriteString(line + "\n")
 	}
