@@ -44,6 +44,7 @@ func main() {
 func root() *cobra.Command {
 	r := &cobra.Command{
 		Use:           "sitrep [module]",
+		Version:       version.Version, // also gives --version
 		Short:         "Read-only situation report for this box",
 		Args:          cobra.MaximumNArgs(1),
 		SilenceUsage:  true,
