@@ -53,7 +53,12 @@ type Result struct {
 
 // Run executes name args… under ctx. In demo it returns the fixture instead.
 func (r *Runner) Run(ctx context.Context, name string, args ...string) (Result, error) {
-	key := FixtureName(name, args...)
+	return r.RunNamed(ctx, FixtureName(name, args...), name, args...)
+}
+
+// RunNamed is Run with an explicit fixture key, for commands whose args are
+// long or variable (systemctl show <every unit>).
+func (r *Runner) RunNamed(ctx context.Context, key, name string, args ...string) (Result, error) {
 	if r.Demo {
 		b, err := r.fixture(key)
 		if err != nil {
@@ -111,7 +116,8 @@ func (r *Runner) Readlink(path string) (string, error) {
 	return s, nil
 }
 
-// Glob lists paths (/proc/[0-9]*). Demo lists the fixture tree.
+// Glob lists paths (/proc/[0-9]*). Demo lists the fixture tree; capture
+// writes an empty placeholder per match so the demo tree has the names.
 func (r *Runner) Glob(pattern string) []string {
 	if r.Demo {
 		base := "testdata/fixtures/" + r.Module + "/fs"
@@ -122,6 +128,15 @@ func (r *Runner) Glob(pattern string) []string {
 		return matches
 	}
 	m, _ := filepath.Glob(pattern)
+	if r.CaptureDir != "" {
+		for _, p := range m {
+			if fi, err := os.Stat(p); err == nil && fi.Mode().IsRegular() {
+				if _, err := os.Stat(filepath.Join(r.CaptureDir, r.Module, "fs"+p)); err != nil {
+					r.capture("fs"+p, nil)
+				}
+			}
+		}
+	}
 	return m
 }
 

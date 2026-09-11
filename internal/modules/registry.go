@@ -4,6 +4,7 @@ package modules
 
 import (
 	"github.com/zebadrabbit/sitrep/internal/module"
+	"github.com/zebadrabbit/sitrep/internal/modules/cron"
 	"github.com/zebadrabbit/sitrep/internal/modules/disks"
 	"github.com/zebadrabbit/sitrep/internal/modules/docker"
 	"github.com/zebadrabbit/sitrep/internal/modules/logs"
@@ -38,6 +39,7 @@ func Register(demo bool) {
 	module.Register(p)
 	module.Register(system.New(demo))
 	module.Register(services.New(demo))
+	module.Register(cron.New(demo))
 	module.Register(disks.New(demo))
 	module.Register(network.New(demo))
 	module.Register(d)
