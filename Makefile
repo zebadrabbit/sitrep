@@ -8,7 +8,7 @@ GOBIN    := $(shell go env GOPATH)/bin
 LINT     := $(GOBIN)/golangci-lint
 export CGO_ENABLED=0
 
-.PHONY: build run demo test screenshot lint install clean gif
+.PHONY: build run demo test screenshot shots lint install clean gif
 
 build:
 	GOOS=linux GOARCH=amd64 go build -trimpath -ldflags '$(LDFLAGS)' -o dist/$(BIN) ./cmd/sitrep
@@ -32,6 +32,19 @@ screenshot: build
 	done; done
 	@rm -f docs/screens/shell-*.txt
 	@ls docs/screens
+
+# README images: a --once frame → scripts/ansi2svg.py → ImageMagick. No browser, no vhs.
+SHOT = CLICOLOR_FORCE=1 COLORTERM=truecolor ./dist/$(BIN) --once --demo
+RENDER = scripts/ansi2svg.py | convert -density 144 -depth 8 svg:-
+shots: build
+	@mkdir -p docs/img
+	$(SHOT) --size 118x36 overview | $(RENDER) docs/img/overview.png
+	$(SHOT) --size 118x34 --keys j ports | $(RENDER) docs/img/ports.png
+	$(SHOT) --size 118x34 --keys j,j,j,j,j,j,j,j,j,j,j,j,j,enter ports | $(RENDER) docs/img/ports-detail.png
+	$(SHOT) --size 118x34 --keys j,space network | $(RENDER) docs/img/network.png
+	$(SHOT) --size 180x50 --view dense | $(RENDER) docs/img/dense.png
+	COLORTERM=truecolor script -qec "stty cols 120 rows 40; ./dist/$(BIN) doctor" /dev/null | $(RENDER) docs/img/doctor.png
+	@ls -la docs/img
 
 lint:
 	@test -x $(LINT) || go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2

@@ -4,6 +4,8 @@ A read-only terminal situation report for a Linux box. Open it first, learn
 what the machine is doing and whether it is healthy, close it. Depth lives in
 `btop` and `netwatch`; sitrep is about **identity and status**.
 
+![Ports tab: every listener with its process, owner, age, connections and what it probably is](docs/img/ports.png)
+
 `make gif` renders `docs/demo.tape` with [vhs](https://github.com/charmbracelet/vhs)
 into `docs/sitrep.gif` (not committed; needs vhs, ttyd, ffmpeg).
 
@@ -24,6 +26,8 @@ sitrep modules info ports
 ## The hero: Ports
 
 What is listening, how long it has been there, and what it probably is.
+
+![Detail pane for a docker-published port: process, cmdline, unit, container and image, identity chain, peers, probe](docs/img/ports-detail.png)
 
 ```
  PROTO  ADDR:PORT               PROCESS              USER    AGE     CONN  IDENTITY
@@ -55,8 +59,23 @@ NFS · Sessions · Logs · Updates. Each ships with a collector, a parser, a
 captured fixture, parser tests, an Overview card, a tab, and
 `sitrep modules info <id>`.
 
+![Overview: one card per module, failures and needs-root counted at the top](docs/img/overview.png)
+
+Network keeps 20 minutes of per-interface rates and draws them as a mirrored
+braille graph, rx up and tx down. `enter` graphs the selected interface,
+`space` adds it as a side-by-side panel.
+
+![Network tab with two interface graph panels](docs/img/network.png)
+
+`--view dense` drops the chrome and tiles your `dense_modules` into a grid
+for the big monitor.
+
+![Dense view: Ports, System, Services and Network tiled at 180x50](docs/img/dense.png)
+
 Unprivileged is the default experience: whatever needs root shows `◐`, never
 an error. `sudo sitrep` or the `setcap` line `doctor` prints unlocks the rest.
+
+![sitrep doctor: environment, privileges, config, detection, per-module state and the ports identity table](docs/img/doctor.png)
 
 ## Keys
 
@@ -101,5 +120,8 @@ Fixtures are captured from the live host with
 `SITREP_CAPTURE_FIXTURES=1 sitrep snapshot` and scrubbed by
 `scripts/redact-fixtures.py`. `--demo` runs those fixtures through the real
 parsers, so it doubles as an integration test of the render path.
+`make shots` re-renders the images above from `--demo` frames through
+`scripts/ansi2svg.py` and ImageMagick; `--once --keys j,enter` presses keys
+before the frame is captured.
 
 Read-only, always. Actions are a v2 conversation (docs/DECISIONS.md).
