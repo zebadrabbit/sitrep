@@ -146,3 +146,25 @@ func (r *Runner) capture(key string, b []byte) {
 	_ = os.MkdirAll(filepath.Dir(p), 0o755)
 	_ = os.WriteFile(p, b, 0o644)
 }
+
+// ModTime stats a host file. Demo reads fixtures/<module>/fs/<path>.mtime
+// holding an RFC 3339 timestamp; capture writes it.
+func (r *Runner) ModTime(path string) (time.Time, error) {
+	key := "fs" + path + ".mtime"
+	if r.Demo {
+		b, err := r.fixture(key)
+		if err != nil {
+			return time.Time{}, err
+		}
+		return time.Parse(time.RFC3339, strings.TrimSpace(string(b)))
+	}
+	fi, err := os.Stat(path)
+	if err != nil {
+		return time.Time{}, err
+	}
+	if !fi.Mode().IsRegular() {
+		return time.Time{}, fmt.Errorf("%s: not a regular file", path)
+	}
+	r.capture(key, []byte(fi.ModTime().UTC().Format(time.RFC3339)))
+	return fi.ModTime(), nil
+}

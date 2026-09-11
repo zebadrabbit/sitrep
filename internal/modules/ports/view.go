@@ -333,6 +333,7 @@ func (m *Module) detailView(r Row, w, h int) string {
 		kv("unit", val(d.Unit)) + "   " + kv("container", s.Dim.Render("phase 2")),
 		kv("cpu", fmt.Sprintf("%.1f%%", d.CPU)) + "   " + kv("rss", ui.Bytes(d.RSS)) + "   " + kv("threads", strconv.Itoa(d.Threads)) + "   " + kv("fds", fds),
 		kv("since", sinceStr(r)),
+		kv("running", sourceStr(r)),
 		"",
 		s.Bold.Render("identity") + "  " + s.Dim.Render("tried in order, first hit wins"),
 		identityTrail(r),
@@ -366,6 +367,24 @@ func sinceStr(r Row) string {
 		return theme.Current().Warn.Render(theme.Current().Glyph.Degraded + " needs root")
 	}
 	return r.Since.Format("2006-01-02 15:04:05") + " (" + ageStr(r.Age) + " ago)"
+}
+
+// sourceStr: "/usr/sbin/sshd  modified 12d 4h ago" or a stale warning when
+// the file changed after the process started.
+func sourceStr(r Row) string {
+	s := theme.Current()
+	d := r.Detail
+	if d.Source == "" {
+		return s.Warn.Render(s.Glyph.Degraded + " needs root")
+	}
+	out := d.Source
+	if !d.SourceMod.IsZero() {
+		out += "  " + s.Dim.Render("modified "+ageStr(r.Since.Add(r.Age).Sub(d.SourceMod))+" ago")
+	}
+	if d.Stale {
+		out += "  " + s.Warn.Render(s.Glyph.Warn+" changed since process started — running old code")
+	}
+	return out
 }
 
 func identityTrail(r Row) string {

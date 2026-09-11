@@ -20,8 +20,8 @@ VmSize:	 1246044 kB
 VmLck:	       0 kB
 VmPin:	       0 kB
 VmHWM:	   18424 kB
-VmRSS:	   18336 kB
-RssAnon:	    4164 kB
+VmRSS:	   18284 kB
+RssAnon:	    4112 kB
 RssFile:	   14172 kB
 RssShmem:	       0 kB
 VmData:	   46896 kB

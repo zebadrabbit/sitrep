@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -44,14 +45,19 @@ type Row struct {
 
 // Detail is the per-process data shown on enter.
 type Detail struct {
-	Cmdline string  `json:"cmdline,omitempty"`
-	Cwd     string  `json:"cwd,omitempty"`
-	Exe     string  `json:"exe,omitempty"`
-	Unit    string  `json:"unit,omitempty"`
-	Threads int     `json:"threads,omitempty"`
-	FDs     int     `json:"fds"`
-	CPU     float64 `json:"cpu"`
-	RSS     uint64  `json:"rss"`
+	Cmdline string `json:"cmdline,omitempty"`
+	Cwd     string `json:"cwd,omitempty"`
+	Exe     string `json:"exe,omitempty"`
+	Unit    string `json:"unit,omitempty"`
+	Threads int    `json:"threads,omitempty"`
+	FDs     int    `json:"fds"`
+	// Source is the file actually running: the exe, or the script when the
+	// exe is an interpreter. Modified after Since means the process is stale.
+	Source    string    `json:"source,omitempty"`
+	SourceMod time.Time `json:"source_mod,omitempty"`
+	Stale     bool      `json:"stale,omitempty"`
+	CPU       float64   `json:"cpu"`
+	RSS       uint64    `json:"rss"`
 }
 
 // Peer is an established connection to a listener.
@@ -255,10 +261,68 @@ func (m *Module) row(ctx context.Context, l Listener, boot, now time.Time) Row {
 	r.Detail.Cwd, _ = m.run.Readlink(fmt.Sprintf("/proc/%d/cwd", l.PID))
 	r.Detail.Exe, _ = m.run.Readlink(fmt.Sprintf("/proc/%d/exe", l.PID))
 	r.PPID, r.Detail.Threads = m.procStatus(l.PID)
+	m.sourceAge(&r)
 	if !m.demo {
 		m.liveStats(ctx, &r)
 	}
 	return r
+}
+
+// sourceAge finds what is really running and when it last changed. An exe
+// link ending in " (deleted)" means the binary was replaced underneath the
+// process: stale, no mtime needed.
+func (m *Module) sourceAge(r *Row) {
+	d := &r.Detail
+	if strings.HasSuffix(d.Exe, " (deleted)") {
+		d.Source, d.Stale = strings.TrimSuffix(d.Exe, " (deleted)"), true
+		return
+	}
+	d.Source = d.Exe
+	if isInterpreter(d.Exe) {
+		if script := scriptPath(d.Cmdline, d.Cwd); script != "" {
+			d.Source = script
+		}
+	}
+	if d.Source == "" {
+		return
+	}
+	// Stat through the process's own root so container paths resolve.
+	mod, err := m.run.ModTime(fmt.Sprintf("/proc/%d/root%s", r.PID, d.Source))
+	if err != nil {
+		return
+	}
+	d.SourceMod = mod
+	d.Stale = !r.Since.IsZero() && mod.After(r.Since)
+}
+
+var interpreters = []string{"python", "perl", "node", "ruby", "php", "bash", "sh", "bun", "deno", "lua"}
+
+// isInterpreter matches exe basenames like python3.12, perl, node.
+func isInterpreter(exe string) bool {
+	base := filepath.Base(exe)
+	for _, i := range interpreters {
+		if strings.HasPrefix(base, i) {
+			return true
+		}
+	}
+	return false
+}
+
+var scriptExt = map[string]bool{".py": true, ".js": true, ".mjs": true, ".ts": true, ".rb": true, ".php": true, ".pl": true, ".sh": true}
+
+// scriptPath picks the first cmdline arg that looks like a script, resolved
+// against cwd. "-m module" style invocations have no file; the exe stands.
+func scriptPath(cmdline, cwd string) string {
+	for _, a := range strings.Fields(cmdline)[min(1, len(strings.Fields(cmdline))):] {
+		if strings.HasPrefix(a, "-") || !scriptExt[strings.ToLower(filepath.Ext(a))] {
+			continue
+		}
+		if !filepath.IsAbs(a) && cwd != "" {
+			a = filepath.Join(cwd, a)
+		}
+		return a
+	}
+	return ""
 }
 
 // procStatus pulls PPid and Threads from /proc/<pid>/status.

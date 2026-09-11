@@ -19,9 +19,9 @@ VmPeak:	 2598368 kB
 VmSize:	 2533088 kB
 VmLck:	       0 kB
 VmPin:	       0 kB
-VmHWM:	   63628 kB
-VmRSS:	   63628 kB
-RssAnon:	   28040 kB
+VmHWM:	   63572 kB
+VmRSS:	   63524 kB
+RssAnon:	   27936 kB
 RssFile:	   35568 kB
 RssShmem:	      20 kB
 VmData:	  207380 kB

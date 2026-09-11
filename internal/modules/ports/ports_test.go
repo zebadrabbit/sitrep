@@ -158,3 +158,54 @@ func TestEmbeddedFixtureRendersAllViews(t *testing.T) {
 		t.Errorf("detail view missing sections:\n%s", det)
 	}
 }
+
+func TestScriptPath(t *testing.T) {
+	cases := []struct{ cmd, cwd, want string }{
+		{"/usr/bin/python3 app.py --port 8000", "/srv/app", "/srv/app/app.py"},
+		{"/usr/bin/python3 -P -m homeassistant --config /config", "/", ""},
+		{"node /opt/bot/index.js", "/tmp", "/opt/bot/index.js"},
+		{"python3", "", ""},
+	}
+	for _, c := range cases {
+		if got := scriptPath(c.cmd, c.cwd); got != c.want {
+			t.Errorf("scriptPath(%q) = %q, want %q", c.cmd, got, c.want)
+		}
+	}
+}
+
+func TestStaleDetection(t *testing.T) {
+	m := synthetic(t, map[string]string{
+		"ss_tulnpH.txt": `tcp LISTEN 0 1 0.0.0.0:8000 0.0.0.0:* users:(("python3",pid=5,fd=3))
+tcp LISTEN 0 1 0.0.0.0:9000 0.0.0.0:* users:(("nginx",pid=6,fd=3))
+`,
+		"ss_tunaH.txt":   "",
+		"fs/proc/stat":   procStat,
+		"fs/proc/uptime": "3600.00 1.00\n",
+		// python3 started at t+60s; app.py modified at t+120s → stale.
+		"fs/proc/5/stat":                      "5 (python3) S 1 5 5 0 -1 0 0 0 0 0 0 0 0 0 20 0 1 0 6000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n",
+		"fs/proc/5/status":                    "Uid:\t1000\nPPid:\t1\nThreads:\t1\n",
+		"fs/proc/5/cmdline":                   "/usr/bin/python3\x00app.py\x00",
+		"fs/proc/5/cwd.link":                  "/srv/app",
+		"fs/proc/5/exe.link":                  "/usr/bin/python3.12",
+		"fs/proc/5/root/srv/app/app.py.mtime": "2023-11-14T22:15:20Z",
+		"fs/proc/6/stat":                      "6 (nginx) S 1 6 6 0 -1 0 0 0 0 0 0 0 0 0 20 0 1 0 6000 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n",
+		"fs/proc/6/status":                    "Uid:\t0\nPPid:\t1\nThreads:\t1\n",
+		"fs/proc/6/exe.link":                  "/usr/sbin/nginx (deleted)",
+	})
+	d, err := m.Collect(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, r := range d.(Data).Rows {
+		switch r.Port {
+		case 8000:
+			if r.Detail.Source != "/srv/app/app.py" || !r.Detail.Stale {
+				t.Errorf("script row: %+v", r.Detail)
+			}
+		case 9000:
+			if r.Detail.Source != "/usr/sbin/nginx" || !r.Detail.Stale {
+				t.Errorf("deleted-exe row: %+v", r.Detail)
+			}
+		}
+	}
+}
