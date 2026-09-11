@@ -49,6 +49,7 @@ type Model struct {
 	opts    Options
 	w, h    int
 	mode    Mode
+	fell    bool // mode is Lite only because the terminal was too small
 	help    bool
 	hint    string // one-time notice in the footer until the next key
 	entries []module.Entry
@@ -171,11 +172,16 @@ func (m Model) activeEntry() *module.Entry {
 	return &m.entries[m.tabs[m.active]]
 }
 
-// autofall drops full → lite when the terminal is too small, with a hint.
+// autofall drops full → lite when the terminal is too small, with a hint,
+// and climbs back once it is big enough again.
 func (m *Model) autofall() {
-	if m.mode == Full && (m.w < fullW || m.h < fullH) {
-		m.mode = Lite
+	small := m.w < fullW || m.h < fullH
+	switch {
+	case m.mode == Full && small:
+		m.mode, m.fell = Lite, true
 		m.hint = fmt.Sprintf("terminal %dx%d < %dx%d: using lite layout", m.w, m.h, fullW, fullH)
+	case m.fell && !small:
+		m.mode, m.fell, m.hint = Full, false, ""
 	}
 }
 

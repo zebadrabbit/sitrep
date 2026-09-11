@@ -26,6 +26,16 @@ func TestAutofallToLite(t *testing.T) {
 	}
 }
 
+func TestAutofallClimbsBack(t *testing.T) {
+	m := sized(sized(New(Options{}), 80, 24), 120, 40)
+	if m.mode != Full || m.hint != "" {
+		t.Fatalf("mode=%v hint=%q; want Full again after growing", m.mode, m.hint)
+	}
+	if m = sized(sized(New(Options{Mode: Lite}), 80, 24), 120, 40); m.mode != Lite {
+		t.Fatalf("explicit --lite must stay Lite, got %v", m.mode)
+	}
+}
+
 func TestFullStaysFull(t *testing.T) {
 	m := sized(New(Options{}), 100, 30)
 	if m.mode != Full || m.hint != "" {
