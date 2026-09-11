@@ -1,0 +1,8 @@
+# No color at all: bold/dim only. For TERM=dumb and screenshots.
+name   = "mono"
+accent = ""
+ok     = ""
+warn   = ""
+crit   = ""
+dim    = ""
+ascii  = false
