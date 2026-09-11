@@ -58,11 +58,11 @@ udp ESTAB      960    0      [2001:db8::1]:59532    [2001:db8::10]:443
 udp ESTAB      17088  0      [2001:db8::1]:60184                  [2001:4860:4828:7700::]:443  
 udp UNCONN     0      0                                          [::]:53                                        [::]:*    
 udp UNCONN     0      0                                          [::]:123                                       [::]:*    
-udp UNCONN     0      0          [fe80::9a4b:e1ff:fe75:b474]%enp3s0f0:546                                       [::]:*    
-udp UNCONN     0      0          [fe80::9a4b:e1ff:fe75:b476]%enp3s0f1:546                                       [::]:*    
+udp UNCONN     0      0          [fe80::1]%enp3s0f0:546                                       [::]:*    
+udp UNCONN     0      0          [fe80::2]%enp3s0f1:546                                       [::]:*    
 udp UNCONN     0      0                                             *:1900                                         *:*    
 udp UNCONN     0      0                                             *:5353                                         *:*    
-udp UNCONN     0      0          [fe80::9a4b:e1ff:fe75:b476]%enp3s0f1:5353                                      [::]:*    
+udp UNCONN     0      0          [fe80::2]%enp3s0f1:5353                                      [::]:*    
 udp ESTAB      960    0      [2001:db8::1]:32806   [2001:db8::11]:443  
 udp ESTAB      0      0      [2001:db8::1]:33769           [2001:db8::12]:443  
 udp ESTAB      960    0      [2001:db8::1]:33895                  [2001:4860:482a:7700::]:443  

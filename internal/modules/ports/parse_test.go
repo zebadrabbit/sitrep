@@ -13,7 +13,7 @@ tcp LISTEN 0 4096 [::]:22 [::]:*
 tcp LISTEN 0 4096 *:18555 *:*
 udp UNCONN 0 0 0.0.0.0:51820 0.0.0.0:*
 udp UNCONN 0 0 10.0.0.5%enp3s0f0:68 0.0.0.0:*
-udp UNCONN 0 0 [fe80::9a4b:e1ff:fe75:b474]%enp3s0f0:546 [::]:*
+udp UNCONN 0 0 [fe80::1]%enp3s0f0:546 [::]:*
 this line is garbage
 tcp LISTEN 0 4096 127.0.0.1:notaport 0.0.0.0:*
 `
@@ -36,7 +36,7 @@ func TestParseListeners(t *testing.T) {
 		{"tcp6", "*", 18555, 0, ""},
 		{"udp", "0.0.0.0", 51820, 0, ""},
 		{"udp", "10.0.0.5", 68, 0, ""},
-		{"udp6", "fe80::9a4b:e1ff:fe75:b474", 546, 0, ""},
+		{"udp6", "fe80::1", 546, 0, ""},
 	}
 	for i, w := range want {
 		g := ls[i]
