@@ -1,0 +1,61 @@
+Name:	go2rtc
+Umask:	0022
+State:	S (sleeping)
+Tgid:	7803
+Ngid:	0
+Pid:	7803
+PPid:	3716
+TracerPid:	0
+Uid:	0	0	0	0
+Gid:	0	0	0	0
+FDSize:	64
+Groups:	0 0 1 2 3 4 6 10 11 20 26 27 
+NStgid:	7803	114
+NSpid:	7803	114
+NSpgid:	3716	72
+NSsid:	3716	72
+Kthread:	0
+VmPeak:	 1246044 kB
+VmSize:	 1246044 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	   18424 kB
+VmRSS:	   18336 kB
+RssAnon:	    4164 kB
+RssFile:	   14172 kB
+RssShmem:	       0 kB
+VmData:	   46896 kB
+VmStk:	     132 kB
+VmExe:	    8844 kB
+VmLib:	       8 kB
+VmPTE:	     144 kB
+VmSwap:	       0 kB
+HugetlbPages:	       0 kB
+CoreDumping:	0
+THP_enabled:	1
+untag_mask:	0xffffffffffffffff
+Threads:	11
+SigQ:	1/289487
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	fffffffc3bba3a00
+SigIgn:	0000000200000000
+SigCgt:	fffffffd7fc1feff
+CapInh:	0000000000000000
+CapPrm:	00000000a80425fb
+CapEff:	00000000a80425fb
+CapBnd:	00000000a80425fb
+CapAmb:	0000000000000000
+NoNewPrivs:	0
+Seccomp:	2
+Seccomp_filters:	1
+Speculation_Store_Bypass:	thread vulnerable
+SpeculationIndirectBranch:	conditional enabled
+Cpus_allowed:	ff
+Cpus_allowed_list:	0-7
+Mems_allowed:	00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000003
+Mems_allowed_list:	0-1
+voluntary_ctxt_switches:	153
+nonvoluntary_ctxt_switches:	3
+x86_Thread_features:	
+x86_Thread_features_locked:	

@@ -2,9 +2,13 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/colorprofile"
@@ -13,7 +17,10 @@ import (
 
 	"github.com/zebadrabbit/sitrep/internal/app"
 	"github.com/zebadrabbit/sitrep/internal/config"
+	"github.com/zebadrabbit/sitrep/internal/detect"
 	"github.com/zebadrabbit/sitrep/internal/doctor"
+	"github.com/zebadrabbit/sitrep/internal/module"
+	"github.com/zebadrabbit/sitrep/internal/modules"
 	"github.com/zebadrabbit/sitrep/internal/theme"
 	"github.com/zebadrabbit/sitrep/internal/version"
 )
@@ -50,29 +57,150 @@ func root() *cobra.Command {
 	// what the terminal supports and stripped entirely when piped.
 	r.SetOut(colorprofile.NewWriter(os.Stdout, os.Environ()))
 	f := r.Flags()
-	f.BoolVar(&flags.demo, "demo", false, "run against bundled fixtures; no host access")
 	f.BoolVar(&flags.once, "once", false, "render one frame to stdout and exit")
 	f.BoolVar(&flags.lite, "lite", false, "single 80x24 screen, no sidebar")
 	f.StringVar(&flags.view, "view", "", "layout: full|lite|dense")
 	f.StringVar(&flags.size, "size", "", "frame size for --once, e.g. 100x30 (default: terminal)")
 	_ = f.MarkHidden("size")
 	r.PersistentFlags().BoolVar(&flags.json, "json", false, "machine-readable output")
+	r.PersistentFlags().BoolVar(&flags.demo, "demo", false, "run against bundled fixtures; no host access")
 
-	r.AddCommand(versionCmd(), doctorCmd(), configCmd(), themeCmd())
+	r.AddCommand(versionCmd(), doctorCmd(), configCmd(), themeCmd(), snapshotCmd(), modulesCmd())
 	return r
 }
 
+// resolve registers modules and runs Detect once. cfg is already loaded by
+// PersistentPreRunE; reload here is cheap and keeps this self-contained.
+func resolve() ([]module.Entry, detect.Env) {
+	modules.Register(flags.demo)
+	env := detect.Detect()
+	env.Demo = flags.demo
+	cfg, _, _ := config.Load()
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	return module.Resolve(ctx, env, cfg), env
+}
+
 func runTUI(cmd *cobra.Command, args []string) error {
+	if len(args) == 1 && !flags.once {
+		return runOneShot(cmd, args[0])
+	}
+	entries, _ := resolve()
 	host, _ := os.Hostname()
-	m := app.New(app.Options{Hostname: host, Mode: mode(), Demo: flags.demo})
+	if flags.demo {
+		host = "example"
+	}
+	active := ""
+	if len(args) == 1 {
+		active = args[0]
+	}
+	m := app.New(app.Options{Hostname: host, Mode: mode(), Demo: flags.demo, Entries: entries, Active: active})
 	if flags.once {
 		w, h := frameSize()
 		r, _ := m.Update(tea.WindowSizeMsg{Width: w, Height: h})
-		fmt.Fprintln(cmd.OutOrStdout(), r.(app.Model).Render(w, h))
+		fmt.Fprintln(cmd.OutOrStdout(), r.(app.Model).Once(w, h))
 		return nil
 	}
 	_, err := tea.NewProgram(m).Run()
 	return err
+}
+
+// runOneShot is `sitrep <module> [--json]`: collect once, print, exit.
+func runOneShot(cmd *cobra.Command, id string) error {
+	resolve()
+	m, ok := module.Lookup(id)
+	if !ok || m.Interval() == 0 {
+		return fmt.Errorf("unknown module %q (see `sitrep modules list`)", id)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), module.Timeout(m))
+	defer cancel()
+	d, err := m.Collect(ctx)
+	if err != nil {
+		return err
+	}
+	if flags.json {
+		enc := json.NewEncoder(cmd.OutOrStdout())
+		enc.SetIndent("", "  ")
+		return enc.Encode(d)
+	}
+	w, _ := frameSize()
+	fmt.Fprintln(cmd.OutOrStdout(), m.View(d, w, 0))
+	return nil
+}
+
+func snapshotCmd() *cobra.Command {
+	var out string
+	c := &cobra.Command{
+		Use:   "snapshot",
+		Short: "Dump every enabled module's current data as JSON",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			entries, _ := resolve()
+			snap := map[string]any{}
+			for _, e := range entries {
+				if !e.Enabled || e.Module.Interval() == 0 {
+					continue
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), module.Timeout(e.Module))
+				d, err := e.Module.Collect(ctx)
+				cancel()
+				if err != nil {
+					snap[e.Module.ID()] = map[string]string{"error": err.Error()}
+					continue
+				}
+				snap[e.Module.ID()] = d
+			}
+			enc := json.NewEncoder(cmd.OutOrStdout())
+			enc.SetIndent("", "  ")
+			return enc.Encode(snap)
+		},
+	}
+	c.Flags().StringVarP(&out, "output", "o", "json", "output format (json)")
+	return c
+}
+
+func modulesCmd() *cobra.Command {
+	c := &cobra.Command{Use: "modules", Short: "List and inspect modules"}
+	c.AddCommand(
+		&cobra.Command{Use: "list", Short: "id, state, and detect reason for every module", RunE: func(cmd *cobra.Command, _ []string) error {
+			entries, _ := resolve()
+			if flags.json {
+				type row struct {
+					ID, State, Reason string
+					Enabled           bool
+				}
+				rows := []row{}
+				for _, e := range entries {
+					rows = append(rows, row{e.Module.ID(), e.Avail.State.String(), e.Avail.Reason, e.Enabled})
+				}
+				enc := json.NewEncoder(cmd.OutOrStdout())
+				enc.SetIndent("", "  ")
+				return enc.Encode(rows)
+			}
+			for _, e := range entries {
+				state := "disabled"
+				if e.Enabled {
+					state = "enabled"
+				}
+				fmt.Fprintf(cmd.OutOrStdout(), "%-10s %-9s %-12s %s\n", e.Module.ID(), state, e.Avail.State, e.Avail.Reason)
+			}
+			return nil
+		}},
+		&cobra.Command{Use: "info <id>", Short: "What a module collects, needs, and shells out to", Args: cobra.ExactArgs(1), RunE: func(cmd *cobra.Command, args []string) error {
+			modules.Register(flags.demo)
+			m, ok := module.Lookup(args[0])
+			if !ok {
+				ids := []string{}
+				for _, x := range module.All() {
+					ids = append(ids, x.ID())
+				}
+				sort.Strings(ids)
+				return fmt.Errorf("unknown module %q; have %s", args[0], strings.Join(ids, ", "))
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "%s — %s\n\n%s\n", m.ID(), m.Title(), m.Info())
+			return nil
+		}},
+	)
+	return c
 }
 
 func mode() app.Mode {
@@ -118,7 +246,10 @@ func doctorCmd() *cobra.Command {
 		Use:   "doctor",
 		Short: "Check environment, privileges, config and modules; exit 1 on any ○",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			rep := doctor.Run()
+			entries, env := resolve()
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			rep := doctor.Run(ctx, env, entries)
 			if err := rep.Write(cmd.OutOrStdout(), flags.json); err != nil {
 				return err
 			}

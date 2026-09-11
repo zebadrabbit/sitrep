@@ -13,3 +13,13 @@ One line each, with the reason. HANDOFF.md is the contract; this file records wh
 
 - Actions (`systemctl restart`, mounts) — v1 is read-only by contract.
 - `sitrep serve` over SSH via Wish.
+
+## 2026-09-10 — Phase 1
+
+- **Module interface deltas from HANDOFF §4.1:** dropped `Hotkey()` (registry assigns it; a method invites hardcoding), added `Update(tea.Msg) tea.Cmd` (tab-local keys had no receiver; the probe needs an async Cmd), added `Info() string` (`modules info` needed a source).
+- **Fixture naming:** `testdata/fixtures/<module>/<cmd>_<args>.txt` with dashes stripped (`ss_tulnpH.txt`), host files under `<module>/fs/<path>`, symlink targets as `<path>.link`. One module runs the same binary with different args, so `<cmd>.txt` alone was ambiguous. `scripts/redact-fixtures.py` scrubs LAN/public IPs, hostname and user after capture.
+- **Demo clock:** in `--demo` the ports module's "now" is the fixture's `btime + /proc/uptime`, so AGE is stable in screenshots instead of growing forever.
+- **Socket-activated listeners:** when `ss -p` lists systemd (pid 1) alongside the service, the service is the owner. Lowest pid otherwise, so nginx shows its master, not a worker.
+- **Ports USER column** is dropped when the content area is under 90 columns (full layout at exactly 100×30, and lite). The detail pane always has it. The alternative was clipping IDENTITY, which is the column that matters.
+- **Cold start** in `doctor` is measured by exec'ing `sitrep --once --demo`: real process start to a full frame, not an in-process timer.
+- **System demo fixture** is the collected `Data` as JSON (`system/data.json`) because gopsutil reads /proc directly; there is no command output to capture. Ports goes through the real parsers.

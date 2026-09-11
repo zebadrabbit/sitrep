@@ -2,6 +2,7 @@
 package doctor
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,6 +14,8 @@ import (
 	"github.com/charmbracelet/x/term"
 
 	"github.com/zebadrabbit/sitrep/internal/config"
+	"github.com/zebadrabbit/sitrep/internal/detect"
+	"github.com/zebadrabbit/sitrep/internal/module"
 	"github.com/zebadrabbit/sitrep/internal/theme"
 	"github.com/zebadrabbit/sitrep/internal/ui"
 )
@@ -56,10 +59,12 @@ func (r Report) Failed() bool {
 	return false
 }
 
-// Run assembles every section. Phase 0 ships Environment, Privileges, Config;
-// later phases append Detection, Modules and Ports.
-func Run() Report {
-	return Report{Sections: []Section{environment(), privileges(), configSection()}}
+// Run assembles every section (HANDOFF §8).
+func Run(ctx context.Context, env detect.Env, entries []module.Entry) Report {
+	env0 := environment()
+	env0.Checks = append(env0.Checks, coldStart())
+	mods, data := modulesSection(ctx, entries)
+	return Report{Sections: []Section{env0, privileges(), configSection(), detection(env, entries), mods, portsSection(data["ports"])}}
 }
 
 // Write prints the report as text or JSON.

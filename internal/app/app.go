@@ -1,13 +1,18 @@
-// Package app is the Bubble Tea root: layout modes, sidebar, footer, key routing.
+// Package app is the Bubble Tea root: layout modes, sidebar, tab routing,
+// key handling, and the async collection loop (HANDOFF §4.2, §7).
 package app
 
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/zebadrabbit/sitrep/internal/module"
+	"github.com/zebadrabbit/sitrep/internal/modules/overview"
+	"github.com/zebadrabbit/sitrep/internal/modules/system"
 	"github.com/zebadrabbit/sitrep/internal/theme"
 	"github.com/zebadrabbit/sitrep/internal/ui"
 )
@@ -21,65 +26,138 @@ const (
 	Dense
 )
 
-// Minimum sizes per mode.
 const (
 	fullW, fullH   = 100, 30
 	denseW, denseH = 130, 44
 	sidebarW       = 16
 )
 
+var spinner = []string{"⠋", "⠙", "⠸", "⠴"}
+
 // Options come from CLI flags.
 type Options struct {
 	Hostname string
 	Mode     Mode
 	Demo     bool
+	Entries  []module.Entry
+	Active   string // module id to open first ("" = overview)
 }
 
 // Model is the root Bubble Tea model.
 type Model struct {
-	opts   Options
-	w, h   int
-	mode   Mode
-	help   bool
-	hint   string // one-time notice shown in the footer until the next key
-	tabs   []string
-	active int
+	opts    Options
+	w, h    int
+	mode    Mode
+	help    bool
+	hint    string // one-time notice in the footer until the next key
+	entries []module.Entry
+	tabs    []int // indexes into entries that are enabled, in hotkey order
+	active  int   // index into tabs
+	store   map[string]*slot
+	frame   int
 }
 
-// New builds the root model. Tabs are empty until Phase 1 registers modules.
+// New builds the root model from resolved entries.
 func New(o Options) Model {
-	return Model{opts: o, mode: o.Mode}
+	m := Model{opts: o, mode: o.Mode, entries: o.Entries, store: map[string]*slot{}}
+	for i, e := range o.Entries {
+		if e.Enabled {
+			if e.Module.ID() == o.Active {
+				m.active = len(m.tabs)
+			}
+			m.tabs = append(m.tabs, i)
+			m.store[e.Module.ID()] = &slot{}
+		}
+	}
+	return m
 }
 
-// Init requests nothing; the first frame paints from zero data.
-func (m Model) Init() tea.Cmd { return nil }
+// Once collects every module synchronously and renders one frame. Used by
+// --once for screenshots and scripts; the TUI never blocks like this.
+func (m Model) Once(w, h int) string {
+	for _, ti := range m.tabs {
+		e := m.entries[ti]
+		if e.Module.Interval() == 0 {
+			continue
+		}
+		msg := collectCmd(e.Module)().(module.DataMsg)
+		r, _ := m.onData(msg)
+		m = r.(Model)
+	}
+	return m.Render(w, h)
+}
 
-// Update handles global keys and resizes.
+// Init starts every collector. The first frame paints before any returns.
+func (m Model) Init() tea.Cmd { return m.startAll() }
+
+// Update routes messages: size, data, ticks, global keys, then the active tab.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.w, m.h = msg.Width, msg.Height
 		m.autofall()
+		return m, nil
+	case module.DataMsg:
+		m.frame++
+		return m.onData(msg)
+	case tickMsg:
+		return m.onTick(msg)
 	case tea.KeyPressMsg:
 		return m.key(msg)
 	}
-	return m, nil
+	return m.forward(msg)
 }
 
 func (m Model) key(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	m.hint = ""
-	switch k.String() {
+	s := k.String()
+	switch s {
 	case "q", "ctrl+c":
 		return m, tea.Quit
 	case "?":
 		m.help = !m.help
+		return m, nil
 	case "esc":
-		m.help = false
+		if m.help {
+			m.help = false
+			return m, nil
+		}
+	case "tab":
+		m.active = (m.active + 1) % max(1, len(m.tabs))
+		return m, nil
+	case "shift+tab":
+		m.active = (m.active + len(m.tabs) - 1) % max(1, len(m.tabs))
+		return m, nil
+	case "r":
+		return m, m.refresh()
+	}
+	if len(s) == 1 && s[0] >= '0' && s[0] <= '9' {
+		for i, ti := range m.tabs {
+			if m.entries[ti].Hotkey == rune(s[0]) {
+				m.active = i
+				return m, nil
+			}
+		}
+	}
+	return m.forward(k)
+}
+
+// forward hands the message to the active module's Update.
+func (m Model) forward(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if e := m.activeEntry(); e != nil {
+		return m, e.Module.Update(msg)
 	}
 	return m, nil
 }
 
-// autofall drops full → lite when the terminal is too small, once, with a hint.
+func (m Model) activeEntry() *module.Entry {
+	if len(m.tabs) == 0 {
+		return nil
+	}
+	return &m.entries[m.tabs[m.active]]
+}
+
+// autofall drops full → lite when the terminal is too small, with a hint.
 func (m *Model) autofall() {
 	if m.mode == Full && (m.w < fullW || m.h < fullH) {
 		m.mode = Lite
@@ -110,6 +188,15 @@ func (m Model) Render(w, h int) string {
 	return lipgloss.JoinVertical(lipgloss.Left, m.header(w), body, m.footer(w))
 }
 
+func (m Model) collecting() bool {
+	for _, s := range m.store {
+		if s.collecting {
+			return true
+		}
+	}
+	return false
+}
+
 func (m Model) header(w int) string {
 	s := theme.Current()
 	left := s.Accent.Render("sitrep") + " " + s.Dim.Render(s.Glyph.Sep) + " " + m.opts.Hostname
@@ -118,6 +205,9 @@ func (m Model) header(w int) string {
 	}
 	if m.opts.Demo {
 		left += "  " + s.Dim.Render("[demo]")
+	}
+	if m.collecting() {
+		left += " " + s.Dim.Render(spinner[m.frame%len(spinner)])
 	}
 	return lipgloss.NewStyle().Width(w).MaxWidth(w).Render(left)
 }
@@ -132,18 +222,19 @@ func (m Model) body(w, h int) string {
 }
 
 func (m Model) sidebar() string {
+	s := theme.Current()
 	if len(m.tabs) == 0 {
-		return theme.Current().Dim.Render(" no modules")
+		return s.Dim.Render(" no modules")
 	}
 	var b strings.Builder
-	for i, t := range m.tabs {
-		key := string(rune('1' + i))
-		if i == 9 {
-			key = "0"
-		}
-		line := " " + ui.Hotkey(key, " "+t)
+	for i, ti := range m.tabs {
+		e := m.entries[ti]
+		line := " " + ui.Hotkey(string(e.Hotkey), " "+e.Module.Title())
 		if i == m.active {
-			line = theme.Current().Accent.Render("▎") + line[1:]
+			line = s.Accent.Render("▎") + line[1:]
+		}
+		if sl := m.store[e.Module.ID()]; sl != nil && sl.err != nil {
+			line += " " + s.Warn.Render(s.Glyph.Warn)
 		}
 		b.WriteString(line + "\n")
 	}
@@ -151,27 +242,100 @@ func (m Model) sidebar() string {
 }
 
 func (m Model) tabLine() string {
-	parts := make([]string, len(m.tabs))
-	for i, t := range m.tabs {
-		parts[i] = "[" + ui.Hotkey(string(rune('1'+i)), "") + "]" + t
+	parts := make([]string, 0, len(m.tabs))
+	for i, ti := range m.tabs {
+		e := m.entries[ti]
+		t := e.Module.Title()
+		if i == m.active {
+			t = theme.Current().Bold.Render(t)
+		}
+		parts = append(parts, "["+ui.Hotkey(string(e.Hotkey), "")+"]"+t)
 	}
 	return strings.Join(parts, " ")
 }
 
+// content is the tab header line plus the module's View.
 func (m Model) content(w, h int) string {
-	msg := theme.Current().Dim.Render("no modules registered yet")
-	return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, msg)
+	e := m.activeEntry()
+	if e == nil {
+		return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, theme.Current().Dim.Render("no modules enabled — see `sitrep modules list`"))
+	}
+	head := m.tabHeader(e, w)
+	var view string
+	if e.Module.ID() == "overview" {
+		view = e.Module.View(m.overviewData(), w, h-2)
+	} else {
+		view = e.Module.View(m.store[e.Module.ID()].data, w, h-2)
+	}
+	box := lipgloss.NewStyle().Width(w).Height(h - 2).MaxHeight(h - 2).MaxWidth(w)
+	return lipgloss.JoinVertical(lipgloss.Left, head, "", box.Render(view))
+}
+
+func (m Model) tabHeader(e *module.Entry, w int) string {
+	s := theme.Current()
+	left := s.Bold.Render(e.Module.Title())
+	var right string
+	if sl := m.store[e.Module.ID()]; sl != nil && e.Module.Interval() > 0 {
+		switch {
+		case sl.err != nil:
+			right = s.Warn.Render(s.Glyph.Warn+" ") + s.Warn.Render(lipgloss.NewStyle().MaxWidth(w/2).Render(sl.err.Error()))
+		case sl.updated.IsZero():
+			right = s.Dim.Render("collecting…")
+		default:
+			right = s.Dim.Render(fmt.Sprintf("%s ago · %s", ui.Age(time.Since(sl.updated)), sl.took.Round(time.Millisecond)))
+		}
+	}
+	gap := max(1, w-lipgloss.Width(left)-lipgloss.Width(right))
+	return left + strings.Repeat(" ", gap) + right
+}
+
+// overviewData assembles tab 1 from the store at render time.
+func (m Model) overviewData() overview.Data {
+	d := overview.Data{Hostname: m.opts.Hostname}
+	if sd, ok := m.store["system"]; ok {
+		if sys, ok := sd.data.(system.Data); ok {
+			d.Distro, d.Kernel, d.Uptime, d.Load = sys.Distro, sys.Kernel, sys.Uptime, sys.Load
+		}
+	}
+	for _, ti := range m.tabs {
+		e := m.entries[ti]
+		if e.Module.Interval() == 0 {
+			continue
+		}
+		sl := m.store[e.Module.ID()]
+		switch {
+		case sl.err != nil:
+			d.Failed++
+		case e.Avail.State == module.NeedsRoot || e.Avail.State == module.Degraded:
+			d.NeedsRoot++
+		default:
+			d.OK++
+		}
+		body := e.Module.Card(sl.data, m.w-sidebarW-6)
+		if sl.err != nil && sl.data == nil {
+			body = theme.Current().Warn.Render(theme.Current().Glyph.Warn + " " + sl.err.Error())
+		}
+		d.Cards = append(d.Cards, overview.Card{Title: e.Module.Title(), Body: body})
+	}
+	return d
 }
 
 func (m Model) footer(w int) string {
 	s := theme.Current()
-	keys := ui.Hotkey("q", "uit") + "  " + ui.Hotkey("?", " help")
+	keys := ui.Hotkey("q", "uit") + "  " + ui.Hotkey("?", " help") + "  " + ui.Hotkey("r", "efresh")
+	if e := m.activeEntry(); e != nil && len(e.Module.Keys()) > 0 {
+		parts := []string{}
+		for _, k := range e.Module.Keys() {
+			parts = append(parts, ui.Hotkey(k.Help().Key, " "+k.Help().Desc))
+		}
+		keys += "  " + s.Dim.Render("│") + "  " + strings.Join(parts, "  ")
+	}
 	right := s.Warn.Render(m.hint)
 	gap := w - lipgloss.Width(keys) - lipgloss.Width(right)
 	if gap < 1 {
 		right, gap = "", 1
 	}
-	return keys + strings.Repeat(" ", gap) + right
+	return lipgloss.NewStyle().MaxWidth(w).Render(keys + strings.Repeat(" ", gap) + right)
 }
 
 func (m Model) helpOverlay(w, h int) string {

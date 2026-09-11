@@ -27,9 +27,10 @@ test:
 # so diffs in PRs show layout changes, not color changes.
 screenshot: build
 	@mkdir -p docs/screens
-	@for size in 100x30 80x24; do \
-	  ./dist/$(BIN) --once --demo --size $$size > docs/screens/shell-$$size.txt; \
-	done
+	@for tab in overview ports system; do for size in 100x30 80x24; do \
+	  ./dist/$(BIN) --once --demo --size $$size $$tab > docs/screens/$$tab-$$size.txt; \
+	done; done
+	@rm -f docs/screens/shell-*.txt
 	@ls docs/screens
 
 lint:
