@@ -20,6 +20,7 @@ type Config struct {
 	Acks         []string `toml:"acks"`          // appliance_sensitive modules the owner has acknowledged
 	DenseModules []string `toml:"dense_modules"` // --view dense box order
 	Layout       string   `toml:"layout"`        // "" | "full" | "lite"
+	UpdatesLog   string   `toml:"updates_log"`   // log written by the owner's update script
 }
 
 // Default is what `config init` writes and what a missing file means.
@@ -27,6 +28,7 @@ func Default() Config {
 	return Config{
 		Theme:        "amber",
 		DenseModules: []string{"ports", "system", "services", "network"},
+		UpdatesLog:   "~/update-all.log",
 	}
 }
 
@@ -73,6 +75,9 @@ func LoadFrom(path string) (cfg Config, unknown []string, err error) {
 	}
 	if cfg.Theme == "" {
 		cfg.Theme = "amber"
+	}
+	if cfg.UpdatesLog == "" {
+		cfg.UpdatesLog = Default().UpdatesLog
 	}
 	return cfg, unknown, nil
 }

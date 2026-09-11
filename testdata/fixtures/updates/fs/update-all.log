@@ -1,0 +1,1087 @@
+===== 2026-09-02T23:07:48-05:00 =====
+
+--- apt ---
+Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Hit:2 https://deb.nodesource.com/node_22.x nodistro InRelease
+Hit:3 http://us.archive.ubuntu.com/ubuntu noble InRelease
+Get:4 http://us.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:5 http://security.ubuntu.com/ubuntu noble-security/main amd64 Components [46.4 kB]
+Get:6 http://us.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:7 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.3 kB]
+Get:8 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1,236 kB]
+Get:9 http://us.archive.ubuntu.com/ubuntu noble-updates/main i386 Packages [539 kB]
+Get:10 http://us.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [288 kB]
+Get:11 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
+Get:12 http://us.archive.ubuntu.com/ubuntu noble-updates/restricted i386 Packages [29.6 kB]
+Get:13 http://us.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1,494 kB]
+Get:14 http://us.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [341 kB]
+Get:15 http://us.archive.ubuntu.com/ubuntu noble-updates/universe i386 Packages [1,142 kB]
+Get:16 http://us.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1,690 kB]
+Get:17 http://us.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+Get:18 http://us.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+Get:19 http://us.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5,744 B]
+Get:20 http://us.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [12.6 kB]
+Fetched 7,848 kB in 3s (2,398 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Calculating upgrade...
+The following packages will be upgraded:
+  byobu console-setup console-setup-linux dnsmasq-base keyboard-configuration
+  libproc2-0 libpython3.12-dev libpython3.12-minimal libpython3.12-stdlib
+  libpython3.12t64 open-vm-tools procps python3.12 python3.12-dev
+  python3.12-minimal python3.12-venv snapd
+17 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Need to get 55.2 MB of archives.
+After this operation, 666 kB of additional disk space will be used.
+Get:1 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 console-setup-linux all 1.226ubuntu1.1 [1,880 kB]
+Get:2 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 console-setup all 1.226ubuntu1.1 [111 kB]
+Get:3 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 keyboard-configuration all 1.226ubuntu1.1 [212 kB]
+Get:4 http://us.archive.ubuntu.com/ubuntu noble-updates/universe amd64 python3.12-venv amd64 3.12.3-1ubuntu0.16 [5,682 B]
+Get:5 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12-dev amd64 3.12.3-1ubuntu0.16 [498 kB]
+Get:6 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-dev amd64 3.12.3-1ubuntu0.16 [5,683 kB]
+Get:7 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12t64 amd64 3.12.3-1ubuntu0.16 [2,339 kB]
+Get:8 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12 amd64 3.12.3-1ubuntu0.16 [651 kB]
+Get:9 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-stdlib amd64 3.12.3-1ubuntu0.16 [2,070 kB]
+Get:10 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12-minimal amd64 3.12.3-1ubuntu0.16 [2,335 kB]
+Get:11 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-minimal amd64 3.12.3-1ubuntu0.16 [838 kB]
+Get:12 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 libproc2-0 amd64 2:4.0.4-4ubuntu3.3 [58.9 kB]
+Get:13 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 procps amd64 2:4.0.4-4ubuntu3.3 [707 kB]
+Get:14 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 open-vm-tools amd64 2:13.0.10-0ubuntu0.24.04.1 [723 kB]
+Get:15 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 byobu all 6.11-0ubuntu1.1 [104 kB]
+Get:16 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 dnsmasq-base amd64 2.91-0ubuntu0.24.04.1 [381 kB]
+Get:17 http://us.archive.ubuntu.com/ubuntu noble-updates/main amd64 snapd amd64 2.76.3+ubuntu24.04 [36.6 MB]
+dpkg-preconfigure: unable to re-open stdin: No such file or directory
+Fetched 55.2 MB in 3s (17.3 MB/s)
+(Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 176521 files and directories currently installed.)
+Preparing to unpack .../00-console-setup-linux_1.226ubuntu1.1_all.deb ...
+Unpacking console-setup-linux (1.226ubuntu1.1) over (1.226ubuntu1) ...
+Preparing to unpack .../01-console-setup_1.226ubuntu1.1_all.deb ...
+Unpacking console-setup (1.226ubuntu1.1) over (1.226ubuntu1) ...
+Preparing to unpack .../02-keyboard-configuration_1.226ubuntu1.1_all.deb ...
+Unpacking keyboard-configuration (1.226ubuntu1.1) over (1.226ubuntu1) ...
+Preparing to unpack .../03-python3.12-venv_3.12.3-1ubuntu0.16_amd64.deb ...
+Unpacking python3.12-venv (3.12.3-1ubuntu0.16) over (3.12.3-1ubuntu0.15) ...
+Preparing to unpack .../04-python3.12-dev_3.12.3-1ubuntu0.16_amd64.deb ...
+Unpacking python3.12-dev (3.12.3-1ubuntu0.16) over (3.12.3-1ubuntu0.15) ...
+Preparing to unpack .../05-libpython3.12-dev_3.12.3-1ubuntu0.16_amd64.deb ...
+Unpacking libpython3.12-dev:amd64 (3.12.3-1ubuntu0.16) over (3.12.3-1ubuntu0.15) ...
+Preparing to unpack .../06-libpython3.12t64_3.12.3-1ubuntu0.16_amd64.deb ...
+Unpacking libpython3.12t64:amd64 (3.12.3-1ubuntu0.16) over (3.12.3-1ubuntu0.15) ...
+Preparing to unpack .../07-python3.12_3.12.3-1ubuntu0.16_amd64.deb ...
+Unpacking python3.12 (3.12.3-1ubuntu0.16) over (3.12.3-1ubuntu0.15) ...
+Preparing to unpack .../08-libpython3.12-stdlib_3.12.3-1ubuntu0.16_amd64.deb ...
+Unpacking libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.16) over (3.12.3-1ubuntu0.15) ...
+Preparing to unpack .../09-python3.12-minimal_3.12.3-1ubuntu0.16_amd64.deb ...
+Unpacking python3.12-minimal (3.12.3-1ubuntu0.16) over (3.12.3-1ubuntu0.15) ...
+Preparing to unpack .../10-libpython3.12-minimal_3.12.3-1ubuntu0.16_amd64.deb ...
+Unpacking libpython3.12-minimal:amd64 (3.12.3-1ubuntu0.16) over (3.12.3-1ubuntu0.15) ...
+Preparing to unpack .../11-libproc2-0_2%3a4.0.4-4ubuntu3.3_amd64.deb ...
+Unpacking libproc2-0:amd64 (2:4.0.4-4ubuntu3.3) over (2:4.0.4-4ubuntu3.2) ...
+Preparing to unpack .../12-procps_2%3a4.0.4-4ubuntu3.3_amd64.deb ...
+Unpacking procps (2:4.0.4-4ubuntu3.3) over (2:4.0.4-4ubuntu3.2) ...
+Preparing to unpack .../13-open-vm-tools_2%3a13.0.10-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking open-vm-tools (2:13.0.10-0ubuntu0.24.04.1) over (2:13.0.0-2~ubuntu0.24.04.1) ...
+Preparing to unpack .../14-byobu_6.11-0ubuntu1.1_all.deb ...
+Unpacking byobu (6.11-0ubuntu1.1) over (6.11-0ubuntu1) ...
+Preparing to unpack .../15-dnsmasq-base_2.91-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking dnsmasq-base (2.91-0ubuntu0.24.04.1) over (2.90-2ubuntu0.4) ...
+Preparing to unpack .../16-snapd_2.76.3+ubuntu24.04_amd64.deb ...
+Unpacking snapd (2.76.3+ubuntu24.04) over (2.76+ubuntu24.04.1) ...
+Setting up snapd (2.76.3+ubuntu24.04) ...
+snapd.failure.service is a disabled or a static unit not running, not starting it.
+snapd.gpio-chardev-setup.target is a disabled or a static unit not running, not starting it.
+snapd.snap-repair.service is a disabled or a static unit not running, not starting it.
+Setting up byobu (6.11-0ubuntu1.1) ...
+Setting up libpython3.12-minimal:amd64 (3.12.3-1ubuntu0.16) ...
+Setting up dnsmasq-base (2.91-0ubuntu0.24.04.1) ...
+Setting up libproc2-0:amd64 (2:4.0.4-4ubuntu3.3) ...
+Setting up open-vm-tools (2:13.0.10-0ubuntu0.24.04.1) ...
+Setting up procps (2:4.0.4-4ubuntu3.3) ...
+Setting up keyboard-configuration (1.226ubuntu1.1) ...
+Your console font configuration will be updated the next time your system
+boots. If you want to update it now, run 'setupcon' from a virtual console.
+update-initramfs: deferring update (trigger activated)
+Setting up python3.12-minimal (3.12.3-1ubuntu0.16) ...
+Setting up libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.16) ...
+Setting up python3.12 (3.12.3-1ubuntu0.16) ...
+Setting up libpython3.12t64:amd64 (3.12.3-1ubuntu0.16) ...
+Setting up console-setup-linux (1.226ubuntu1.1) ...
+Setting up console-setup (1.226ubuntu1.1) ...
+update-initramfs: deferring update (trigger activated)
+Setting up python3.12-venv (3.12.3-1ubuntu0.16) ...
+Setting up libpython3.12-dev:amd64 (3.12.3-1ubuntu0.16) ...
+Setting up python3.12-dev (3.12.3-1ubuntu0.16) ...
+Processing triggers for hicolor-icon-theme (0.17-2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.8) ...
+Processing triggers for systemd (255.4-1ubuntu8.17) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for dbus (1.14.10-4ubuntu4.1) ...
+Processing triggers for mailcap (3.70+nmu1ubuntu1.24.04.1) ...
+Processing triggers for initramfs-tools (0.142ubuntu25.8) ...
+update-initramfs: Generating /boot/initrd.img-6.8.0-138-generic
+
+Running kernel seems to be up-to-date.
+
+The processor microcode seems to be up-to-date.
+
+Restarting services...
+ systemctl restart supervisor.service uwsgi.service wren.service
+
+Service restarts being deferred:
+ /etc/needrestart/restart.d/dbus.service
+ systemctl restart docker.service
+ systemctl restart getty@tty1.service
+ systemctl restart systemd-logind.service
+ systemctl restart unattended-upgrades.service
+
+No containers need to be restarted.
+
+User sessions running outdated binaries:
+ user @ session #350: bash[1599554], screen[1599553]
+ user @ session #495: python3[1544531]
+ user @ user manager service: systemd[1669]
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Del nginx-common 1.24.0-2ubuntu7.16 [45.0 kB]
+Del nginx 1.24.0-2ubuntu7.16 [523 kB]
+
+--- old kernels ---
+(Reading database ... 176521 files and directories currently installed.)
+Purging configuration files for linux-image-5.15.0-176-generic (5.15.0-176.186) ...
+Purging configuration files for linux-image-6.8.0-110-generic (6.8.0-110.110) ...
+Purging configuration files for linux-image-6.8.0-111-generic (6.8.0-111.111) ...
+Purging configuration files for linux-image-6.8.0-117-generic (6.8.0-117.117) ...
+Purging configuration files for linux-image-6.8.0-124-generic (6.8.0-124.124) ...
+Purging configuration files for linux-image-6.8.0-134-generic (6.8.0-134.134) ...
+Purging configuration files for linux-image-6.8.0-136-generic (6.8.0-136.136) ...
+Purging configuration files for linux-modules-5.15.0-176-generic (5.15.0-176.186) ...
+Purging configuration files for linux-modules-6.8.0-110-generic (6.8.0-110.110) ...
+Purging configuration files for linux-modules-6.8.0-111-generic (6.8.0-111.111) ...
+Purging configuration files for linux-modules-6.8.0-117-generic (6.8.0-117.117) ...
+Purging configuration files for linux-modules-6.8.0-124-generic (6.8.0-124.124) ...
+Purging configuration files for linux-modules-6.8.0-134-generic (6.8.0-134.134) ...
+Purging configuration files for linux-modules-6.8.0-136-generic (6.8.0-136.136) ...
+Purging configuration files for linux-modules-extra-5.15.0-176-generic (5.15.0-176.186) ...
+Purging configuration files for linux-modules-extra-6.8.0-110-generic (6.8.0-110.110) ...
+Purging configuration files for linux-modules-extra-6.8.0-111-generic (6.8.0-111.111) ...
+Purging configuration files for linux-modules-extra-6.8.0-117-generic (6.8.0-117.117) ...
+Purging configuration files for linux-modules-extra-6.8.0-124-generic (6.8.0-124.124) ...
+Purging configuration files for linux-modules-extra-6.8.0-134-generic (6.8.0-134.134) ...
+Purging configuration files for linux-modules-extra-6.8.0-136-generic (6.8.0-136.136) ...
+
+--- snap ---
+All snaps up to date.
+
+--- hermes ---
+⚕ Updating Hermes Agent...
+
+→ Fleet: 1 running service(s) across profiles: default
+→ Fetching updates...
+→ Warming npx cache for agent-browser...
+
+→ Checking configuration for new options...
+
+  ℹ Updating config format (v33 → v40)…
+  ✓ Config format updated (no new settings to configure)
+  ℹ display.personality=none (one-time reset)
+  ℹ display.background_process_notifications=concise (was: all)
+  ℹ delegation.max_iterations=250 (was: 50)
+  ℹ delegation.max_concurrent_children=10 (was: 3)
+  ℹ model_catalog.ttl_hours 1 → ttl_minutes 20 (default)
+  ⚠️  platform 'teams' references unknown toolset 'hermes-teams'
+  ⚠️  platform 'teams' has no valid toolsets configured — the agent will have no tools on this platform. Run `hermes tools` to reconfigure.
+  ⚠️  platform 'google_chat' references unknown toolset 'hermes-google_chat'
+  ⚠️  platform 'google_chat' has no valid toolsets configured — the agent will have no tools on this platform. Run `hermes tools` to reconfigure.
+→ Checking if desktop app needs rebuilding...
+  ✓ Desktop app up to date
+✓ Already up to date! [main @ 97f3229dfd]
+
+--- claude ---
+Current version: 2.1.259
+Checking for updates to latest version...
+
+Warning: Multiple installations found
+- npm-global at /usr/bin/claude
+- native at /home/user/.local/bin/claude (currently running)
+
+Warning: Leftover npm global installation at /usr/bin/claude
+Fix: Run: npm -g uninstall @anthropic-ai/claude-code
+Claude Code is up to date (2.1.259)
+
+--- npm ---
+
+removed 65 packages, and changed 92 packages in 8s
+
+15 packages are looking for funding
+  run `npm fund` for details
+npm warn deprecated mkdirp@0.5.1: Legacy versions of mkdirp are no longer supported. Please update to mkdirp 1.x. (Note that the API surface has changed to use Promises in 1.x.)
+
+added 24 packages, removed 26 packages, and changed 311 packages in 38s
+
+79 packages are looking for funding
+  run `npm fund` for details
+npm warn install-scripts 3 packages had install scripts blocked because they are not covered by allowScripts:
+npm warn install-scripts   @anthropic-ai/claude-code@2.1.259 (postinstall: node install.cjs)
+npm warn install-scripts   @github/keytar@7.10.6 (install: node script/install.js || npm run build)
+npm warn install-scripts   node-pty@1.0.0 (install: node-gyp rebuild; postinstall: node scripts/post-install.js)
+npm warn install-scripts
+npm warn install-scripts Run `npm install -g --allow-scripts=@anthropic-ai/claude-code,@github/keytar,node-pty` to allow these scripts once, or `npm config set allow-scripts=@anthropic-ai/claude-code,@github/keytar,node-pty --location=user` to allow them for all global installs.
+
+--- pipx ---
+upgrading shared libraries...
+upgrading linecast...
+upgrading miniircd...
+upgrading uvicorn...
+/home/user/.local/pipx/venvs/uvicorn/bin/python: No module named pip
+Error encountered when upgrading uvicorn:
+'/home/user/.local/pipx/venvs/uvicorn/bin/python -m pip --no-input install
+--upgrade uvicorn -q' failed
+
+upgrading poetry...
+/home/user/.local/pipx/venvs/poetry/bin/python: No module named pip
+Error encountered when upgrading poetry:
+'/home/user/.local/pipx/venvs/poetry/bin/python -m pip --no-input install
+--upgrade poetry -q' failed
+
+
+Some packages encountered errors during upgrade.
+    See specific error messages above.
+upgraded package linecast from 2.1.0 to 2.3.0 (location:
+/home/user/.local/pipx/venvs/linecast)
+!! failed: pipx upgrade-all
+
+--- pip --user ---
+Requirement already satisfied: aiohappyeyeballs in ./.local/lib/python3.12/site-packages (2.6.2)
+Collecting aiohappyeyeballs
+  Using cached aiohappyeyeballs-2.7.1-py3-none-any.whl.metadata (5.9 kB)
+Requirement already satisfied: aiohttp in ./.local/lib/python3.12/site-packages (3.14.1)
+Collecting aiohttp
+  Downloading aiohttp-3.14.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (8.3 kB)
+Requirement already satisfied: alembic in ./.local/lib/python3.12/site-packages (1.13.2)
+Collecting alembic
+  Downloading alembic-1.19.1-py3-none-any.whl.metadata (7.3 kB)
+Requirement already satisfied: annotated-types in ./.local/lib/python3.12/site-packages (0.7.0)
+Collecting annotated-types
+  Using cached annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+Requirement already satisfied: anyio in ./.local/lib/python3.12/site-packages (4.14.1)
+Collecting anyio
+  Downloading anyio-4.15.0-py3-none-any.whl.metadata (4.7 kB)
+Requirement already satisfied: bidict in ./.local/lib/python3.12/site-packages (0.23.1)
+Collecting bidict
+  Downloading bidict-0.24.1-py3-none-any.whl.metadata (8.7 kB)
+Requirement already satisfied: black in ./.local/lib/python3.12/site-packages (24.8.0)
+Collecting black
+  Using cached black-26.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (95 kB)
+Requirement already satisfied: charset-normalizer in ./.local/lib/python3.12/site-packages (3.4.7)
+Collecting charset-normalizer
+  Downloading charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (45 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.9/45.9 kB 2.0 MB/s eta 0:00:00
+Requirement already satisfied: coverage in ./.local/lib/python3.12/site-packages (7.14.3)
+Collecting coverage
+  Downloading coverage-7.16.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (8.6 kB)
+Requirement already satisfied: discord.py in ./.local/lib/python3.12/site-packages (2.3.2)
+Collecting discord.py
+  Using cached discord_py-2.7.1-py3-none-any.whl.metadata (7.5 kB)
+Requirement already satisfied: eventlet in ./.local/lib/python3.12/site-packages (0.36.1)
+Collecting eventlet
+  Downloading eventlet-0.41.2-py3-none-any.whl.metadata (5.4 kB)
+Requirement already satisfied: filelock in ./.local/lib/python3.12/site-packages (3.29.4)
+Collecting filelock
+  Downloading filelock-3.32.5-py3-none-any.whl.metadata (2.0 kB)
+Requirement already satisfied: Flask in ./.local/lib/python3.12/site-packages (3.0.3)
+Collecting Flask
+  Using cached flask-3.1.3-py3-none-any.whl.metadata (3.2 kB)
+Requirement already satisfied: Flask-Migrate in ./.local/lib/python3.12/site-packages (4.0.5)
+Collecting Flask-Migrate
+  Downloading Flask_Migrate-4.1.0-py3-none-any.whl.metadata (3.3 kB)
+Requirement already satisfied: Flask-SocketIO in ./.local/lib/python3.12/site-packages (5.3.7)
+Collecting Flask-SocketIO
+  Using cached flask_socketio-5.6.1-py3-none-any.whl.metadata (2.6 kB)
+Requirement already satisfied: greenlet in ./.local/lib/python3.12/site-packages (3.5.3)
+Collecting greenlet
+  Downloading greenlet-3.5.5-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (3.8 kB)
+Requirement already satisfied: gunicorn in ./.local/lib/python3.12/site-packages (21.2.0)
+Collecting gunicorn
+  Downloading gunicorn-26.2.0-py3-none-any.whl.metadata (5.5 kB)
+Requirement already satisfied: httpx in ./.local/lib/python3.12/site-packages (0.27.2)
+Collecting httpx
+  Using cached httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+Requirement already satisfied: linkify-it-py in ./.local/lib/python3.12/site-packages (2.1.0)
+Collecting linkify-it-py
+  Downloading linkify_it_py-2.2.0-py3-none-any.whl.metadata (8.6 kB)
+Requirement already satisfied: Mako in ./.local/lib/python3.12/site-packages (1.3.12)
+Collecting Mako
+  Downloading mako-1.4.1-py3-none-any.whl.metadata (2.9 kB)
+Requirement already satisfied: openai in ./.local/lib/python3.12/site-packages (1.30.5)
+Collecting openai
+  Downloading openai-3.7.0-py3-none-any.whl.metadata (41 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 41.7/41.7 kB 5.5 MB/s eta 0:00:00
+Requirement already satisfied: platformdirs in ./.local/lib/python3.12/site-packages (4.10.0)
+Collecting platformdirs
+  Downloading platformdirs-4.11.7-py3-none-any.whl.metadata (5.5 kB)
+Requirement already satisfied: playwright in ./.local/lib/python3.12/site-packages (1.60.0)
+Collecting playwright
+  Downloading playwright-1.62.0-py3-none-manylinux1_x86_64.whl.metadata (3.3 kB)
+Requirement already satisfied: pre-commit in ./.local/lib/python3.12/site-packages (3.7.0)
+Collecting pre-commit
+  Downloading pre_commit-4.6.2-py2.py3-none-any.whl.metadata (1.2 kB)
+Requirement already satisfied: psycopg2-binary in ./.local/lib/python3.12/site-packages (2.9.9)
+Collecting psycopg2-binary
+  Downloading psycopg2_binary-2.9.12-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (4.9 kB)
+Requirement already satisfied: pydantic in ./.local/lib/python3.12/site-packages (2.13.4)
+Collecting pydantic
+  Downloading pydantic-2.13.5-py3-none-any.whl.metadata (110 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 110.2/110.2 kB 3.6 MB/s eta 0:00:00
+Requirement already satisfied: pydantic_core in ./.local/lib/python3.12/site-packages (2.46.4)
+Collecting pydantic_core
+  Downloading pydantic_core-2.48.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.5 kB)
+Requirement already satisfied: pyee in ./.local/lib/python3.12/site-packages (13.0.1)
+Collecting pyee
+  Downloading pyee-14.0.0-py3-none-any.whl.metadata (1.8 kB)
+Requirement already satisfied: pygame-ce in ./.local/lib/python3.12/site-packages (2.5.7)
+Collecting pygame-ce
+  Downloading pygame_ce-2.5.8-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (11 kB)
+Requirement already satisfied: pytest in ./.local/lib/python3.12/site-packages (8.2.0)
+Collecting pytest
+  Using cached pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+Requirement already satisfied: pytest-cov in ./.local/lib/python3.12/site-packages (5.0.0)
+Collecting pytest-cov
+  Using cached pytest_cov-7.1.0-py3-none-any.whl.metadata (32 kB)
+Requirement already satisfied: python-discovery in ./.local/lib/python3.12/site-packages (1.4.2)
+Collecting python-discovery
+  Downloading python_discovery-1.6.0-py3-none-any.whl.metadata (5.1 kB)
+Requirement already satisfied: python-engineio in ./.local/lib/python3.12/site-packages (4.13.3)
+Collecting python-engineio
+  Downloading python_engineio-4.14.0-py3-none-any.whl.metadata (2.5 kB)
+Requirement already satisfied: python-socketio in ./.local/lib/python3.12/site-packages (5.11.4)
+Collecting python-socketio
+  Downloading python_socketio-5.16.4-py3-none-any.whl.metadata (3.3 kB)
+Requirement already satisfied: redis in ./.local/lib/python3.12/site-packages (5.0.1)
+Collecting redis
+  Downloading redis-8.1.0-py3-none-any.whl.metadata (16 kB)
+Requirement already satisfied: requests in ./.local/lib/python3.12/site-packages (2.32.3)
+Collecting requests
+  Using cached requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+Requirement already satisfied: ruff in ./.local/lib/python3.12/site-packages (0.5.7)
+Collecting ruff
+  Downloading ruff-0.16.5-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (26 kB)
+Requirement already satisfied: SQLAlchemy in ./.local/lib/python3.12/site-packages (2.0.51)
+Collecting SQLAlchemy
+  Downloading sqlalchemy-2.0.52-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (9.6 kB)
+Requirement already satisfied: structlog in ./.local/lib/python3.12/site-packages (24.1.0)
+Collecting structlog
+  Downloading structlog-26.1.0-py3-none-any.whl.metadata (9.7 kB)
+Requirement already satisfied: textual in ./.local/lib/python3.12/site-packages (0.63.0)
+Collecting textual
+  Using cached textual-8.2.8-py3-none-any.whl.metadata (9.1 kB)
+Requirement already satisfied: tqdm in ./.local/lib/python3.12/site-packages (4.68.3)
+Collecting tqdm
+  Downloading tqdm-4.70.0-py3-none-any.whl.metadata (57 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.3/57.3 kB 5.9 MB/s eta 0:00:00
+Requirement already satisfied: typing_extensions in ./.local/lib/python3.12/site-packages (4.15.0)
+Collecting typing_extensions
+  Using cached typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Requirement already satisfied: typing-inspection in ./.local/lib/python3.12/site-packages (0.4.2)
+Collecting typing-inspection
+  Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+Requirement already satisfied: virtualenv in ./.local/lib/python3.12/site-packages (21.5.1)
+Collecting virtualenv
+  Downloading virtualenv-21.7.8-py3-none-any.whl.metadata (3.5 kB)
+Requirement already satisfied: Werkzeug in ./.local/lib/python3.12/site-packages (3.0.4)
+Collecting Werkzeug
+  Using cached werkzeug-3.1.8-py3-none-any.whl.metadata (4.0 kB)
+Requirement already satisfied: yarl in ./.local/lib/python3.12/site-packages (1.24.2)
+Collecting yarl
+  Downloading yarl-1.24.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (103 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 104.0/104.0 kB 6.8 MB/s eta 0:00:00
+Requirement already satisfied: aiosignal>=1.4.0 in ./.local/lib/python3.12/site-packages (from aiohttp) (1.4.0)
+Requirement already satisfied: attrs>=17.3.0 in /usr/lib/python3/dist-packages (from aiohttp) (23.2.0)
+Requirement already satisfied: frozenlist>=1.1.1 in ./.local/lib/python3.12/site-packages (from aiohttp) (1.8.0)
+Requirement already satisfied: multidict<7.0,>=4.5 in ./.local/lib/python3.12/site-packages (from aiohttp) (6.7.1)
+Requirement already satisfied: propcache>=0.2.0 in ./.local/lib/python3.12/site-packages (from aiohttp) (0.5.2)
+Requirement already satisfied: idna>=2.8 in /usr/lib/python3/dist-packages (from anyio) (3.6)
+Requirement already satisfied: click>=8.0.0 in /usr/lib/python3/dist-packages (from black) (8.1.6)
+Requirement already satisfied: mypy-extensions>=0.4.3 in ./.local/lib/python3.12/site-packages (from black) (1.1.0)
+Requirement already satisfied: packaging>=22.0 in /usr/lib/python3/dist-packages (from black) (24.0)
+Requirement already satisfied: pathspec>=1.0.0 in ./.local/lib/python3.12/site-packages (from black) (1.1.1)
+Collecting pytokens~=0.4.0 (from black)
+  Using cached pytokens-0.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (3.8 kB)
+Requirement already satisfied: dnspython>=1.15.0 in /usr/lib/python3/dist-packages (from eventlet) (2.6.1)
+Collecting blinker>=1.9.0 (from Flask)
+  Using cached blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+Requirement already satisfied: itsdangerous>=2.2.0 in ./.local/lib/python3.12/site-packages (from Flask) (2.2.0)
+Requirement already satisfied: jinja2>=3.1.2 in /usr/lib/python3/dist-packages (from Flask) (3.1.2)
+Requirement already satisfied: markupsafe>=2.1.1 in /usr/lib/python3/dist-packages (from Flask) (2.1.5)
+Requirement already satisfied: Flask-SQLAlchemy>=1.0 in ./.local/lib/python3.12/site-packages (from Flask-Migrate) (3.1.1)
+Requirement already satisfied: certifi in /usr/lib/python3/dist-packages (from httpx) (2023.11.17)
+Requirement already satisfied: httpcore==1.* in ./.local/lib/python3.12/site-packages (from httpx) (1.0.9)
+Requirement already satisfied: h11>=0.16 in ./.local/lib/python3.12/site-packages (from httpcore==1.*->httpx) (0.16.0)
+Collecting httpx2<3,>=2.7.0 (from openai)
+  Downloading httpx2-2.12.0-py3-none-any.whl.metadata (9.5 kB)
+Collecting jiter<1,>=0.16.0 (from openai)
+  Downloading jiter-0.16.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (5.2 kB)
+Requirement already satisfied: sniffio in ./.local/lib/python3.12/site-packages (from openai) (1.3.1)
+Requirement already satisfied: cfgv>=2.0.0 in ./.local/lib/python3.12/site-packages (from pre-commit) (3.5.0)
+Requirement already satisfied: identify>=1.0.0 in ./.local/lib/python3.12/site-packages (from pre-commit) (2.6.19)
+Requirement already satisfied: nodeenv>=0.11.1 in ./.local/lib/python3.12/site-packages (from pre-commit) (1.10.0)
+Requirement already satisfied: pyyaml>=5.1 in /usr/lib/python3/dist-packages (from pre-commit) (6.0.1)
+Collecting pydantic_core
+  Downloading pydantic_core-2.46.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.6 kB)
+Requirement already satisfied: iniconfig>=1.0.1 in ./.local/lib/python3.12/site-packages (from pytest) (2.3.0)
+Requirement already satisfied: pluggy<2,>=1.5 in ./.local/lib/python3.12/site-packages (from pytest) (1.6.0)
+Requirement already satisfied: pygments>=2.7.2 in /usr/lib/python3/dist-packages (from pytest) (2.17.2)
+Requirement already satisfied: simple-websocket>=0.10.0 in ./.local/lib/python3.12/site-packages (from python-engineio) (1.1.0)
+Requirement already satisfied: urllib3<3,>=1.26 in /usr/lib/python3/dist-packages (from requests) (2.0.7)
+Requirement already satisfied: markdown-it-py>=2.1.0 in /usr/lib/python3/dist-packages (from markdown-it-py[linkify]>=2.1.0->textual) (3.0.0)
+Requirement already satisfied: mdit-py-plugins in ./.local/lib/python3.12/site-packages (from textual) (0.6.1)
+Collecting pygments>=2.7.2 (from pytest)
+  Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting rich>=14.2.0 (from textual)
+  Using cached rich-15.0.0-py3-none-any.whl.metadata (18 kB)
+Requirement already satisfied: distlib<1,>=0.3.7 in ./.local/lib/python3.12/site-packages (from virtualenv) (0.4.3)
+Collecting httpcore2==2.12.0 (from httpx2<3,>=2.7.0->openai)
+  Downloading httpcore2-2.12.0-py3-none-any.whl.metadata (25 kB)
+Collecting idna>=2.8 (from anyio)
+  Downloading idna-3.19-py3-none-any.whl.metadata (9.2 kB)
+Collecting truststore>=0.10 (from httpx2<3,>=2.7.0->openai)
+  Downloading truststore-0.10.4-py3-none-any.whl.metadata (4.4 kB)
+Requirement already satisfied: mdurl~=0.1 in /usr/lib/python3/dist-packages (from markdown-it-py>=2.1.0->markdown-it-py[linkify]>=2.1.0->textual) (0.1.2)
+Requirement already satisfied: wsproto in ./.local/lib/python3.12/site-packages (from simple-websocket>=0.10.0->python-engineio) (1.3.2)
+Using cached aiohappyeyeballs-2.7.1-py3-none-any.whl (15 kB)
+Downloading aiohttp-3.14.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (1.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 7.5 MB/s eta 0:00:00
+Downloading alembic-1.19.1-py3-none-any.whl (265 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 265.9/265.9 kB 9.8 MB/s eta 0:00:00
+Using cached annotated_types-0.8.0-py3-none-any.whl (13 kB)
+Downloading anyio-4.15.0-py3-none-any.whl (131 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 131.9/131.9 kB 10.4 MB/s eta 0:00:00
+Downloading bidict-0.24.1-py3-none-any.whl (36 kB)
+Using cached black-26.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (1.9 MB)
+Downloading charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (248 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 248.8/248.8 kB 10.3 MB/s eta 0:00:00
+Downloading coverage-7.16.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (257 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 257.8/257.8 kB 10.6 MB/s eta 0:00:00
+Using cached discord_py-2.7.1-py3-none-any.whl (1.2 MB)
+Downloading eventlet-0.41.2-py3-none-any.whl (364 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 364.6/364.6 kB 11.5 MB/s eta 0:00:00
+Downloading filelock-3.32.5-py3-none-any.whl (100 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100.0/100.0 kB 13.8 MB/s eta 0:00:00
+Using cached flask-3.1.3-py3-none-any.whl (103 kB)
+Downloading Flask_Migrate-4.1.0-py3-none-any.whl (21 kB)
+Using cached flask_socketio-5.6.1-py3-none-any.whl (18 kB)
+Downloading greenlet-3.5.5-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (621 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 621.4/621.4 kB 12.4 MB/s eta 0:00:00
+Downloading gunicorn-26.2.0-py3-none-any.whl (228 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 228.4/228.4 kB 16.8 MB/s eta 0:00:00
+Using cached httpx-0.28.1-py3-none-any.whl (73 kB)
+Downloading linkify_it_py-2.2.0-py3-none-any.whl (21 kB)
+Downloading mako-1.4.1-py3-none-any.whl (80 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 80.0/80.0 kB 12.2 MB/s eta 0:00:00
+Downloading openai-3.7.0-py3-none-any.whl (1.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.7/1.7 MB 15.6 MB/s eta 0:00:00
+Downloading platformdirs-4.11.7-py3-none-any.whl (23 kB)
+Downloading playwright-1.62.0-py3-none-manylinux1_x86_64.whl (47.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 47.7/47.7 MB 31.4 MB/s eta 0:00:00
+Downloading pre_commit-4.6.2-py2.py3-none-any.whl (226 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 226.2/226.2 kB 25.1 MB/s eta 0:00:00
+Downloading psycopg2_binary-2.9.12-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (4.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.3/4.3 MB 20.1 MB/s eta 0:00:00
+Downloading pydantic-2.13.5-py3-none-any.whl (472 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 472.6/472.6 kB 28.9 MB/s eta 0:00:00
+Downloading pydantic_core-2.46.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 38.8 MB/s eta 0:00:00
+Downloading pygame_ce-2.5.8-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (12.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.1/12.1 MB 25.1 MB/s eta 0:00:00
+Using cached pytest-9.1.1-py3-none-any.whl (386 kB)
+Using cached pytest_cov-7.1.0-py3-none-any.whl (22 kB)
+Downloading python_discovery-1.6.0-py3-none-any.whl (38 kB)
+Downloading python_engineio-4.14.0-py3-none-any.whl (60 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 60.3/60.3 kB 10.8 MB/s eta 0:00:00
+Downloading python_socketio-5.16.4-py3-none-any.whl (82 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 82.1/82.1 kB 13.9 MB/s eta 0:00:00
+Downloading redis-8.1.0-py3-none-any.whl (560 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 560.6/560.6 kB 31.0 MB/s eta 0:00:00
+Using cached requests-2.34.2-py3-none-any.whl (73 kB)
+Downloading ruff-0.16.5-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (10.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.3/10.3 MB 19.3 MB/s eta 0:00:00
+Downloading sqlalchemy-2.0.52-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (3.4 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.4/3.4 MB 21.7 MB/s eta 0:00:00
+Downloading structlog-26.1.0-py3-none-any.whl (73 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 73.8/73.8 kB 11.2 MB/s eta 0:00:00
+Using cached textual-8.2.8-py3-none-any.whl (731 kB)
+Downloading tqdm-4.70.0-py3-none-any.whl (80 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 80.2/80.2 kB 12.8 MB/s eta 0:00:00
+Using cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+Downloading virtualenv-21.7.8-py3-none-any.whl (5.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.3/5.3 MB 40.9 MB/s eta 0:00:00
+Using cached werkzeug-3.1.8-py3-none-any.whl (226 kB)
+Downloading yarl-1.24.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (109 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 109.8/109.8 kB 16.3 MB/s eta 0:00:00
+Using cached blinker-1.9.0-py3-none-any.whl (8.5 kB)
+Downloading httpx2-2.12.0-py3-none-any.whl (95 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 95.4/95.4 kB 14.4 MB/s eta 0:00:00
+Downloading httpcore2-2.12.0-py3-none-any.whl (83 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 83.1/83.1 kB 13.5 MB/s eta 0:00:00
+Downloading idna-3.19-py3-none-any.whl (68 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 68.5/68.5 kB 11.8 MB/s eta 0:00:00
+Downloading jiter-0.16.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (343 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 343.8/343.8 kB 29.5 MB/s eta 0:00:00
+Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 36.9 MB/s eta 0:00:00
+Using cached pytokens-0.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (269 kB)
+Using cached rich-15.0.0-py3-none-any.whl (310 kB)
+Downloading truststore-0.10.4-py3-none-any.whl (18 kB)
+Installing collected packages: Werkzeug, typing_extensions, truststore, tqdm, structlog, ruff, redis, pytokens, pygments, pygame-ce, psycopg2-binary, platformdirs, Mako, linkify-it-py, jiter, idna, gunicorn, greenlet, filelock, coverage, charset-normalizer, blinker, bidict, annotated-types, aiohappyeyeballs, yarl, typing-inspection, SQLAlchemy, rich, requests, python-discovery, pytest, pydantic_core, httpcore2, Flask, eventlet, black, anyio, virtualenv, textual, python-engineio, pytest-cov, pydantic, playwright, httpx2, httpx, alembic, aiohttp, python-socketio, pre-commit, openai, Flask-Migrate, discord.py, Flask-SocketIO
+  Attempting uninstall: Werkzeug
+    Found existing installation: Werkzeug 3.0.4
+    Uninstalling Werkzeug-3.0.4:
+      Successfully uninstalled Werkzeug-3.0.4
+  Attempting uninstall: typing_extensions
+    Found existing installation: typing_extensions 4.15.0
+    Uninstalling typing_extensions-4.15.0:
+      Successfully uninstalled typing_extensions-4.15.0
+  Attempting uninstall: tqdm
+    Found existing installation: tqdm 4.68.3
+    Uninstalling tqdm-4.68.3:
+      Successfully uninstalled tqdm-4.68.3
+  Attempting uninstall: structlog
+    Found existing installation: structlog 24.1.0
+    Uninstalling structlog-24.1.0:
+      Successfully uninstalled structlog-24.1.0
+  Attempting uninstall: ruff
+    Found existing installation: ruff 0.5.7
+    Uninstalling ruff-0.5.7:
+      Successfully uninstalled ruff-0.5.7
+  Attempting uninstall: redis
+    Found existing installation: redis 5.0.1
+    Uninstalling redis-5.0.1:
+      Successfully uninstalled redis-5.0.1
+  Attempting uninstall: pygame-ce
+    Found existing installation: pygame-ce 2.5.7
+    Uninstalling pygame-ce-2.5.7:
+      Successfully uninstalled pygame-ce-2.5.7
+  Attempting uninstall: psycopg2-binary
+    Found existing installation: psycopg2-binary 2.9.9
+    Uninstalling psycopg2-binary-2.9.9:
+      Successfully uninstalled psycopg2-binary-2.9.9
+  Attempting uninstall: platformdirs
+    Found existing installation: platformdirs 4.10.0
+    Uninstalling platformdirs-4.10.0:
+      Successfully uninstalled platformdirs-4.10.0
+  Attempting uninstall: Mako
+    Found existing installation: Mako 1.3.12
+    Uninstalling Mako-1.3.12:
+      Successfully uninstalled Mako-1.3.12
+  Attempting uninstall: linkify-it-py
+    Found existing installation: linkify-it-py 2.1.0
+    Uninstalling linkify-it-py-2.1.0:
+      Successfully uninstalled linkify-it-py-2.1.0
+  Attempting uninstall: gunicorn
+    Found existing installation: gunicorn 21.2.0
+    Uninstalling gunicorn-21.2.0:
+      Successfully uninstalled gunicorn-21.2.0
+  Attempting uninstall: greenlet
+    Found existing installation: greenlet 3.5.3
+    Uninstalling greenlet-3.5.3:
+      Successfully uninstalled greenlet-3.5.3
+  Attempting uninstall: filelock
+    Found existing installation: filelock 3.29.4
+    Uninstalling filelock-3.29.4:
+      Successfully uninstalled filelock-3.29.4
+  Attempting uninstall: coverage
+    Found existing installation: coverage 7.14.3
+    Uninstalling coverage-7.14.3:
+      Successfully uninstalled coverage-7.14.3
+  Attempting uninstall: charset-normalizer
+    Found existing installation: charset-normalizer 3.4.7
+    Uninstalling charset-normalizer-3.4.7:
+      Successfully uninstalled charset-normalizer-3.4.7
+  Attempting uninstall: bidict
+    Found existing installation: bidict 0.23.1
+    Uninstalling bidict-0.23.1:
+      Successfully uninstalled bidict-0.23.1
+  Attempting uninstall: annotated-types
+    Found existing installation: annotated-types 0.7.0
+    Uninstalling annotated-types-0.7.0:
+      Successfully uninstalled annotated-types-0.7.0
+  Attempting uninstall: aiohappyeyeballs
+    Found existing installation: aiohappyeyeballs 2.6.2
+    Uninstalling aiohappyeyeballs-2.6.2:
+      Successfully uninstalled aiohappyeyeballs-2.6.2
+  Attempting uninstall: yarl
+    Found existing installation: yarl 1.24.2
+    Uninstalling yarl-1.24.2:
+      Successfully uninstalled yarl-1.24.2
+  Attempting uninstall: typing-inspection
+    Found existing installation: typing-inspection 0.4.2
+    Uninstalling typing-inspection-0.4.2:
+      Successfully uninstalled typing-inspection-0.4.2
+  Attempting uninstall: SQLAlchemy
+    Found existing installation: SQLAlchemy 2.0.51
+    Uninstalling SQLAlchemy-2.0.51:
+      Successfully uninstalled SQLAlchemy-2.0.51
+  Attempting uninstall: requests
+    Found existing installation: requests 2.32.3
+    Uninstalling requests-2.32.3:
+      Successfully uninstalled requests-2.32.3
+  Attempting uninstall: python-discovery
+    Found existing installation: python-discovery 1.4.2
+    Uninstalling python-discovery-1.4.2:
+      Successfully uninstalled python-discovery-1.4.2
+  Attempting uninstall: pytest
+    Found existing installation: pytest 8.2.0
+    Uninstalling pytest-8.2.0:
+      Successfully uninstalled pytest-8.2.0
+  Attempting uninstall: pydantic_core
+    Found existing installation: pydantic_core 2.46.4
+    Uninstalling pydantic_core-2.46.4:
+      Successfully uninstalled pydantic_core-2.46.4
+  Attempting uninstall: Flask
+    Found existing installation: Flask 3.0.3
+    Uninstalling Flask-3.0.3:
+      Successfully uninstalled Flask-3.0.3
+  Attempting uninstall: eventlet
+    Found existing installation: eventlet 0.36.1
+    Uninstalling eventlet-0.36.1:
+      Successfully uninstalled eventlet-0.36.1
+  Attempting uninstall: black
+    Found existing installation: black 24.8.0
+    Uninstalling black-24.8.0:
+      Successfully uninstalled black-24.8.0
+  Attempting uninstall: anyio
+    Found existing installation: anyio 4.14.1
+    Uninstalling anyio-4.14.1:
+      Successfully uninstalled anyio-4.14.1
+  Attempting uninstall: virtualenv
+    Found existing installation: virtualenv 21.5.1
+    Uninstalling virtualenv-21.5.1:
+      Successfully uninstalled virtualenv-21.5.1
+  Attempting uninstall: textual
+    Found existing installation: textual 0.63.0
+    Uninstalling textual-0.63.0:
+      Successfully uninstalled textual-0.63.0
+  Attempting uninstall: python-engineio
+    Found existing installation: python-engineio 4.13.3
+    Uninstalling python-engineio-4.13.3:
+      Successfully uninstalled python-engineio-4.13.3
+  Attempting uninstall: pytest-cov
+    Found existing installation: pytest-cov 5.0.0
+    Uninstalling pytest-cov-5.0.0:
+      Successfully uninstalled pytest-cov-5.0.0
+  Attempting uninstall: pydantic
+    Found existing installation: pydantic 2.13.4
+    Uninstalling pydantic-2.13.4:
+      Successfully uninstalled pydantic-2.13.4
+  Attempting uninstall: playwright
+    Found existing installation: playwright 1.60.0
+    Uninstalling playwright-1.60.0:
+      Successfully uninstalled playwright-1.60.0
+  Attempting uninstall: httpx
+    Found existing installation: httpx 0.27.2
+    Uninstalling httpx-0.27.2:
+      Successfully uninstalled httpx-0.27.2
+  Attempting uninstall: alembic
+    Found existing installation: alembic 1.13.2
+    Uninstalling alembic-1.13.2:
+      Successfully uninstalled alembic-1.13.2
+  Attempting uninstall: aiohttp
+    Found existing installation: aiohttp 3.14.1
+    Uninstalling aiohttp-3.14.1:
+      Successfully uninstalled aiohttp-3.14.1
+  Attempting uninstall: python-socketio
+    Found existing installation: python-socketio 5.11.4
+    Uninstalling python-socketio-5.11.4:
+      Successfully uninstalled python-socketio-5.11.4
+  Attempting uninstall: pre-commit
+    Found existing installation: pre-commit 3.7.0
+    Uninstalling pre-commit-3.7.0:
+      Successfully uninstalled pre-commit-3.7.0
+  Attempting uninstall: openai
+    Found existing installation: openai 1.30.5
+    Uninstalling openai-1.30.5:
+      Successfully uninstalled openai-1.30.5
+  Attempting uninstall: Flask-Migrate
+    Found existing installation: Flask-Migrate 4.0.5
+    Uninstalling Flask-Migrate-4.0.5:
+      Successfully uninstalled Flask-Migrate-4.0.5
+  Attempting uninstall: discord.py
+    Found existing installation: discord.py 2.3.2
+    Uninstalling discord.py-2.3.2:
+      Successfully uninstalled discord.py-2.3.2
+  Attempting uninstall: Flask-SocketIO
+    Found existing installation: Flask-SocketIO 5.3.7
+    Uninstalling Flask-SocketIO-5.3.7:
+      Successfully uninstalled Flask-SocketIO-5.3.7
+Successfully installed Flask-3.1.3 Flask-Migrate-4.1.0 Flask-SocketIO-5.6.1 Mako-1.4.1 SQLAlchemy-2.0.52 Werkzeug-3.1.8 aiohappyeyeballs-2.7.1 aiohttp-3.14.3 alembic-1.19.1 annotated-types-0.8.0 anyio-4.15.0 bidict-0.24.1 black-26.5.1 blinker-1.9.0 charset-normalizer-3.5.1 coverage-7.16.0 discord.py-2.7.1 eventlet-0.41.2 filelock-3.32.5 greenlet-3.5.5 gunicorn-26.2.0 httpcore2-2.12.0 httpx-0.28.1 httpx2-2.12.0 idna-3.19 jiter-0.16.0 linkify-it-py-2.2.0 openai-3.7.0 platformdirs-4.11.7 playwright-1.62.0 pre-commit-4.6.2 psycopg2-binary-2.9.12 pydantic-2.13.5 pydantic_core-2.46.5 pygame-ce-2.5.8 pygments-2.21.0 pytest-9.1.1 pytest-cov-7.1.0 python-discovery-1.6.0 python-engineio-4.14.0 python-socketio-5.16.4 pytokens-0.4.1 redis-8.1.0 requests-2.34.2 rich-15.0.0 ruff-0.16.5 structlog-26.1.0 textual-8.2.8 tqdm-4.70.0 truststore-0.10.4 typing-inspection-0.4.4 typing_extensions-4.16.0 virtualenv-21.7.8 yarl-1.24.5
+
+--- docker ---
+Error response from daemon: pull access denied for anomalist-anomalist, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
+!! failed: docker pull -q anomalist-anomalist:latest
+docker.io/library/node:22-alpine
+docker.io/portainer/portainer-ce:lts
+docker.io/library/postgres:15-alpine
+docker.io/library/postgres:16-alpine
+docker.io/supabase/studio:2026.07.07-sha-a6a04f2
+docker.io/nodered/node-red:latest
+Error response from daemon: pull access denied for honcho-api, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
+!! failed: docker pull -q honcho-api:latest
+Error response from daemon: pull access denied for honcho-deriver, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
+!! failed: docker pull -q honcho-deriver:latest
+Error response from daemon: pull access denied for firecrawl-api, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
+!! failed: docker pull -q firecrawl-api:latest
+Error response from daemon: pull access denied for firecrawl-playwright-service, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
+!! failed: docker pull -q firecrawl-playwright-service:latest
+Error response from daemon: pull access denied for firecrawl-nuq-postgres, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
+!! failed: docker pull -q firecrawl-nuq-postgres:latest
+docker.io/library/redis:8.2
+docker.io/library/redis:alpine
+docker.io/pgvector/pgvector:pg15
+docker.io/library/alpine:latest
+docker.io/supabase/postgres:203.0.113.1
+docker.io/supabase/realtime:v2.102.3
+docker.io/supabase/storage-api:v1.60.4
+docker.io/supabase/supavisor:2.9.5
+ghcr.io/home-assistant/home-assistant:stable
+docker.io/supabase/postgres-meta:v0.96.6
+docker.io/supabase/edge-runtime:v1.74.0
+docker.io/supabase/gotrue:v2.189.0
+ghcr.io/plankanban/planka:2.1.1
+docker.io/library/rabbitmq:3-management
+docker.io/foundationdb/foundationdb:7.3.63
+docker.io/darthsim/imgproxy:v3.30.1
+docker.io/postgrest/postgrest:v14.12
+docker.io/kong/kong:3.9.1
+Deleted Images:
+deleted: sha256:798be3fb483f5a80dc86c20ac3128d530add858afc0e9acf3f7c20b295dbf370
+deleted: sha256:3220479a152fc414fbafcc4af81b2d5cca1fc8afabc1f47ea020d54126861857
+deleted: sha256:81037055c59cd02b291a35e643f63be5f028f2a8fa220f9cc98d03328b5b40f3
+deleted: sha256:dbdd164b11ec29f1fb496885c0b7b832e1a72bdf44b2bdc09cc8164111329903
+deleted: sha256:eff748206f1ec7bff6b18b1db3a6f27318b96ea30251e4639710ca2f9e6ba3e8
+deleted: sha256:17416ae14328f2040676d4c8d1a64df5ff3621490ad12916d07c4a006ab17baa
+deleted: sha256:5128eda50af5c93aaed606ca4955a2edce5b48996038d3e8eaa5aba2d0d4ae5f
+deleted: sha256:e3c17cdc33c596122ba50ea56fe022026044bfac6b3cb8682f3f63064fc5a91b
+deleted: sha256:1b8d16a65b4ed63c6a770bcd4fc04494d183926bf013d4ffe2f4a9723f7dad69
+deleted: sha256:673343fec0cc124c09975103a0edcd4c0b14dff7f0773e41c4f3ed22db9f6721
+deleted: sha256:2214086f9dc7997dfb5ffe3a64beda763ea78064937b23d17fd577a3a89d01f9
+deleted: sha256:981cde4041ce40683b48bbc2f044725b7ff0604ee1729ad1ed96884a32c523a2
+deleted: sha256:81f149e9faee1196393aa93a736ead2eda2d359b5575c7cc9c52ce9611a52188
+deleted: sha256:646a8e83e04a4455597ac5c7cfacf0e3adf69804e43f9dc972e0a4c7cb2267ad
+deleted: sha256:fe6d18de961978aa438104186847052c83a068fe3751860fcadab9b426c07fb5
+deleted: sha256:ec8fcf99258e479a9cba1ab5bb3b58668cf1f4db92b3e8197de6375610855730
+deleted: sha256:426e3825acdcae3a22c3acaf9a0ac70046011b498fa1a931536658799e6291c7
+deleted: sha256:88b2ca77ec078ce511caa9b411ca2035a2f89e16cd5f17efef26647cc934164e
+deleted: sha256:979eac9ebfdc19cd9fc6263600f5726275a8d2edc78c14a30728fc7919b6335f
+deleted: sha256:8107cbf058d2f2e5cb61e02f9ee065a2a00d8c864d6c16516e1a9986f8cc4fad
+deleted: sha256:8d7ca21524cab7669ca7d2a86f92e17e4955852ff351c7718e19835a48c8603b
+deleted: sha256:ae6ca51985d2605be8347668a157874c4f67106d88775e23f87e8aedaf7f7137
+deleted: sha256:aed40fb6634743c36f539456dacdcb9dccb8d61d0b54ce7e80ccf6b877662113
+deleted: sha256:ef49016776ce288f1e8cc6c38f339ff19610fd35704b3d9380b8a22c1fc91aef
+deleted: sha256:01ffa6805cb0a149354755504ca295577ef136aaeb069d67ea1242fc5208ad12
+deleted: sha256:637ffdfe32987fcc7bbcf5a6776589713233dd7bf0ce921212d77227a91afb2e
+deleted: sha256:71b65699ce77cbb23102c5354eff4a17b0282c39e4eef1a0a7f6a83f3822b2f2
+deleted: sha256:294bd5f76f7f7fe4c20926cb6e39a0c99cf8625c93d704d27249f180570a5182
+deleted: sha256:a4c9829a871394505caf7843d4ac47876b8885b2336325b97053b7f962af0c08
+deleted: sha256:eb19f21212c3dc737159c4fc4b68cfe4cd146bb1d533277059b8b6741af42aef
+deleted: sha256:7b3e2c91135bcd7eebadaeed975c662e13e377115db5c51a24df1bad092d557d
+deleted: sha256:e1dd6098edd543fbf71d0fd368a5ab03aa4b39b05cca75c3797385ae2dadfb2a
+deleted: sha256:ecd744b79e7705f7ab5da00f867319d0585e00224c3e8586d667f7f9db7fbcae
+deleted: sha256:8867f92b14a20e027b01fff9d3b3192fd6e3dffc246544e7360615db8ac33502
+deleted: sha256:4afad780d215a1a91eaf566abe0bb69008164406c0dcbe129d2f29585cae0c0c
+deleted: sha256:1bb370fc652cd79db84961ff1fdf00500468c787a64a2652cd247877ae5f949b
+deleted: sha256:0e62899a936610dad0431c1f1df4f73885fe0b9e579849042217cfc9028a3a15
+deleted: sha256:7b0ca855bde3842bef77f682b4012cfb5c7aaf9101b0a9a3f7a66543d9d80cd3
+deleted: sha256:bd1dd8078e68c318f0ccf469f1fd499326263b521501cadc3900b5e2a6ba82f3
+deleted: sha256:6ab3851eaadebf72183eb1a442667787c75097156801358b122703ff3863fad7
+deleted: sha256:eae92127357633748f3a53511678bd94896fa8ea60bf652b55be8e2529ce74dd
+deleted: sha256:82c0cbbdaf104facb4e8852c44bc80c0f3bd00e6282fe40f4cf29e719b63410c
+deleted: sha256:f2aa9332e9f726b5e4ef1ab079e7c02962473a9119d6125aa5213804d31e1ebe
+deleted: sha256:8732a89b3702fc8e308bd2879ee161d2c3b7446f6db7d6cc8070d1b31e8d0e8d
+deleted: sha256:4bdaf4a8f7e3148f407879b01afcec3068d20343e089257b5b3ce520487ebf9d
+deleted: sha256:685e633cd65936335359d7cef05bea8c803c6fd580a6c743fd3caa700935167a
+deleted: sha256:4d8e2ca7bd44db47433c506b24cdd33c847d6bfdf1377faee1f1f6ee78b952d6
+deleted: sha256:0c08c3b2cb2c0a3617ab9c50a0ceb84ad184b0511c1c27d9b60c7d7b6a53b487
+deleted: sha256:582b743f33e2fc22ff4c299d2a955dbf205c3b7c13fc0ab2836c5eb288a200fc
+deleted: sha256:44c2a741bf4741dce473909df9aa6b650b51064a41ef0517f8dddcb7052145a5
+deleted: sha256:4f8c6ee760d1a2a9c3bfdb3d27e5f5a87c049beaf83ba48837c26264156f1f0c
+deleted: sha256:4da0fdc4bc2e8c9824ef2d8a6368ebe896961b8faf72616090fc88b8a1f20e89
+deleted: sha256:f0cb2aea3da06b27e518156cb2f3879bbdf08b252783e9935cc18f26fd243196
+deleted: sha256:16f8a91ab64f63dc3ab6e634c716e8a304fb804c7dbd50a4a5750ee19f393942
+deleted: sha256:b1f2f9b61a8009d134aed959505b01b7cc1df45bba5e94ecd6f8b348a6cf0620
+deleted: sha256:848067dab1b279ac4afbb3277187d71266c51e1954b3e8e4b220f87e36716329
+deleted: sha256:cd3bdf89e80cc79d77209ecd39a98392fe34d8d4935f72e4dd69179044abf696
+deleted: sha256:5a867fade4783070f2699be6ca315e65a82c7dfa23baffec3c7855d5c11ef743
+deleted: sha256:e0d23871387158daf868bd8f89d4e2ff513a1b7b5cb04537eac7866043fa3769
+deleted: sha256:75fc28c3ec07f2df3a3ce6d0df830ecb448cad57e8ddbebd3a6917650a355edc
+deleted: sha256:19fc93eacf9f6540bf13cf5565cb05c14619aec7a466d7bf15b4a2eebc049ac4
+deleted: sha256:961498a253cbbfde93a5861ad58b9b4e223fb74caa1f44800b975d5db97de157
+deleted: sha256:cbf5e3bbca3a86a835dff18847f72f9384333ee37313f43365f29bc4623a84dd
+deleted: sha256:802d8d48221fb6c9fee787515dbb70127824b71b0e1ed6a39b54963f1aba89e7
+deleted: sha256:5c04ae57700a290dc010b6b9b09feee511435fc5c1b3ee083937f709a1741344
+deleted: sha256:c939723e0dd77980efd4522bd3291efc9def6574535f7966880f842332d9d070
+deleted: sha256:47dc2d66e0230e3b0a011380350f251eb989d451d4de2e5b76a4fc5e4d179fb4
+deleted: sha256:feb9ba3ded96d3ebf8512561d88608b6f27e2f0208012de22f6564e0f9bc2c2d
+deleted: sha256:1b6ebb05993c5e2930be783ae82c6c13210bcd2170bafcbbb6a74d64799c6c38
+deleted: sha256:33a1205c012760c83b391d3a08ad984ef386865ca148c2f32a909d609cddd54a
+deleted: sha256:371c5cbb6c72a1f3f417c793bc65a734fa017a85fd19085b70a79ccad1685500
+deleted: sha256:f397c748f6c6103fddd697c46f5e640beecf2a32ccd35bd1ae4d233499fa6471
+untagged: postgres@sha256:3d0f7584ed7d04e27fa050d6683a74746608faf21f202be78460d679cc56461f
+deleted: sha256:9b4593c6de443299b46098151fc1ec154c882339b77a56334c7ce612c8a7be6a
+deleted: sha256:21d4481a9d08cc7965928df21ad3500a02f346ca29d97c5608867484ecb7e23e
+deleted: sha256:a5767333952d83306d0893a8e77e75e182cbad5cbd624c03b0de72f22b3cb53a
+deleted: sha256:382fbd05dfed3ba5070d88573eb15295b3b2eecc8b3c801c2bdf069c09495842
+deleted: sha256:6cbabcef03c7dfd11ad2d3fcdae5d7f454a66d3cf144d6d5160f8f9fcfd19895
+deleted: sha256:af9a096b9835036f4fcdaf6b26272215b01d57680ac1a0cdf8b9ac33197019a0
+deleted: sha256:3a2c68f0bea79ead3b5c88514650e1dd33f9682c483f4f8be394d73c86b30f4d
+deleted: sha256:4cd2408a8c473ad2b13fc746f5c496cfc271e8fbb56d45f5ac283ec57f8b480f
+deleted: sha256:9a64b2a5ad2afc34c0414b45932071a0ce419602ebd3ed774be7e86a78c3f5c6
+deleted: sha256:8cedfaf12d47f0c2940576b457c6762aac433dac24728ba2af0a1bd5806b8264
+deleted: sha256:4a43f44199365afc4de3695367b47cacf593ddd689ac53be138c8256bd6c1fbd
+deleted: sha256:1fa167bf9b179ea3a69b924329eaf0bcab042c0df9788ca7f72db85a95814a0e
+deleted: sha256:9e21206c55aa5360b5b6622c5dd9ac330c4a7a6081bc23dcb778fd319e9640bc
+deleted: sha256:dc7474c6e3a803a6d3e80803015b42a31890b67c5ac04528fe84a57a7763ee9e
+deleted: sha256:e9021e366e297dfff1784458b4578262bda36791d539af3f7f3719eb4ede356a
+deleted: sha256:2b9d9707b462e604b7327f56eba594638e2788fe46ce7f58a4fde68c617d62bb
+deleted: sha256:dae40083ed794ccd4b5a22f65cc3a965c59c5e2a8a05a6c47079b7f7c8171de1
+deleted: sha256:0a14d23b6ff33004d389d5d4bbcf1bc4d39162dcc3d84c1add5910be5cc79a57
+deleted: sha256:b40003672f4c8e88a6c1bd9f4587609db6a4a7cff1a20c0d4e56135f98da2e4e
+deleted: sha256:37e4ca20d653e58773e92d7f845644ab487c07a504af26812385057120e2342e
+deleted: sha256:154019cae7b4ede8f1520b3fe3fd00bc03aa4e7180283af47484da7945739bac
+deleted: sha256:47e477313eac241850e05ca463bff7840a177cdf8b3e60a67fe10ef08c7917e1
+deleted: sha256:9f75fbea671da4d93859d6035ca6f6943144d5564308774930ea4e2f794d6705
+deleted: sha256:5be40db9c6590af633720cca432a7c302149212753ae12e0ce92522e8cc13af8
+deleted: sha256:7d3c6b7723157af0cdece53909ceb40868b33645cafa1592760233489c8098af
+deleted: sha256:d8c502c19a8db50b6a4443a5d4f1d0ab1ac7e4b0117ec0b6d8c076bfe0f0643a
+deleted: sha256:1105321d4e94e6e166c6dd17ec7d907a2f0aef1b73d9c3ebadbdfefeb008a896
+deleted: sha256:43ffac376ae2c7c7611e442e5518f8fbf562e3b24bc50d88ca732f0c0737fdde
+deleted: sha256:52001eebab1763505e98c9e5aa3a2f1e3fa3b1bff349ea91f9c1f7e8d1bc8859
+deleted: sha256:e3ebeda4041a7db0b8968003025b181bb6c7bc96dee1cdc1afdb66c9f364e49c
+deleted: sha256:705695fde4afd784a332c87ada60b651e4352fc853e7f2a82a4fb3a92318754c
+deleted: sha256:f61fa7727b2cb55e05102195fe6baecd62984506d03b99e6c9a2e709c2b9533f
+deleted: sha256:d2aac06da8a64e08fcec63901afea3ce5ba2a54910618460b462c60619792a98
+deleted: sha256:247a664ab0fbc306a4bb7311ea239f744701da4e10032971eff5feda5435d1eb
+deleted: sha256:f0ad6824d516be405939b710db70380d37f42fc8853387d6649551434ff20595
+deleted: sha256:d2544b3e8ed90681b9f4b87ff9acaf864eacc6031bf6355be594adb794adf314
+deleted: sha256:be54f76676d97a40dbedd6c599cc755084a864246cb7f7ff34834df41bb2fd03
+
+Total reclaimed space: 1.004GB
+
+--- summary ---
+failures this run:
+!! failed: pipx upgrade-all
+!! failed: docker pull -q anomalist-anomalist:latest
+!! failed: docker pull -q honcho-api:latest
+!! failed: docker pull -q honcho-deriver:latest
+!! failed: docker pull -q firecrawl-api:latest
+!! failed: docker pull -q firecrawl-playwright-service:latest
+!! failed: docker pull -q firecrawl-nuq-postgres:latest
+done 2026-09-02T23:19:37-05:00
+===== 2026-09-02T23:28:17-05:00 =====
+
+--- apt ---
+Hit:1 https://deb.nodesource.com/node_22.x nodistro InRelease
+Hit:2 http://us.archive.ubuntu.com/ubuntu noble InRelease
+Hit:3 http://us.archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:5 http://us.archive.ubuntu.com/ubuntu noble-backports InRelease
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Calculating upgrade...
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+
+--- old kernels ---
+
+--- snap ---
+All snaps up to date.
+
+--- hermes ---
+Using Python 3.11.15 environment at: venv
+Resolved 1 package in 183ms
+Checked 1 package in 0.19ms
+⚕ Updating Hermes Agent...
+
+→ Fleet: 1 running service(s) across profiles: default
+→ Fetching updates...
+→ Found 6 new commit(s)
+→ Pulling updates...
+  ✓ Cleared 57 stale __pycache__ directories
+→ Python dependencies unchanged — skipping reinstall
+  ✓ Cleared 1 stale __pycache__ directory
+
+→ Refreshing 17 active lazy backend(s)...
+  ✓ 17 already current
+
+→ Refreshing active memory provider dependencies (honcho)...
+
+  Installing dependencies: honcho-ai
+  ✓ Installed honcho-ai
+→ Warming npx cache for agent-browser...
+→ Checking if desktop app needs rebuilding...
+  ✓ Desktop app up to date
+
+✓ Code updated! [main @ db23c79bbe]
+  ✓ Model catalog cache refreshed from checkout
+
+→ Syncing bundled skills...
+  ✓ Skills are up to date
+
+→ Syncing bundled skills to all profiles...
+  default: up to date
+
+→ Checking configuration for new options...
+  ✓ Configuration is up to date
+
+✓ Update complete! (v0.21.0) [main @ db23c79bbe]
+  ✓ Installed hermes-acp launcher → /home/user/.local/bin/hermes-acp
+
+→ Refreshing cua-driver (Computer Use)...
+✓     cua-driver is already on the latest release (0.23.2).
+  → hermes-gateway: draining (up to 1995s)...
+
+  ✓ Restarted hermes-gateway
+
+Tip: You can now select a provider and model:
+  hermes model              # Select provider and model
+
+Fleet version check:
+  ✓ default (pid 215645) @ db23c79b — up to date
+
+--- claude ---
+Current version: 2.1.259
+Checking for updates to latest version...
+Claude Code is up to date (2.1.259)
+
+--- npm ---
+
+changed 10 packages in 6s
+
+15 packages are looking for funding
+  run `npm fund` for details
+npm warn deprecated mkdirp@0.5.1: Legacy versions of mkdirp are no longer supported. Please update to mkdirp 1.x. (Note that the API surface has changed to use Promises in 1.x.)
+
+changed 342 packages in 27s
+
+79 packages are looking for funding
+  run `npm fund` for details
+npm warn install-scripts 2 packages had install scripts blocked because they are not covered by allowScripts:
+npm warn install-scripts   @github/keytar@7.10.6 (install: node script/install.js || npm run build)
+npm warn install-scripts   node-pty@1.0.0 (install: node-gyp rebuild; postinstall: node scripts/post-install.js)
+npm warn install-scripts
+npm warn install-scripts Run `npm install -g --allow-scripts=@github/keytar,node-pty` to allow these scripts once, or `npm config set allow-scripts=@github/keytar,node-pty --location=user` to allow them for all global installs.
+
+--- pipx ---
+upgrading shared libraries...
+upgrading linecast...
+upgrading miniircd...
+upgrading uvicorn...
+upgrading poetry...
+Versions did not change after running 'pipx upgrade' for each package 😴
+
+--- pip --user ---
+Requirement already satisfied: pydantic_core in ./.local/lib/python3.12/site-packages (2.46.5)
+Collecting pydantic_core
+  Using cached pydantic_core-2.48.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.5 kB)
+Requirement already satisfied: pyee in ./.local/lib/python3.12/site-packages (13.0.1)
+Collecting pyee
+  Using cached pyee-14.0.0-py3-none-any.whl.metadata (1.8 kB)
+Requirement already satisfied: typing-extensions>=4.14.1 in ./.local/lib/python3.12/site-packages (from pydantic_core) (4.16.0)
+Downloading pydantic_core-2.48.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 4.3 MB/s eta 0:00:00
+Downloading pyee-14.0.0-py3-none-any.whl (15 kB)
+Installing collected packages: pyee, pydantic_core
+  Attempting uninstall: pyee
+    Found existing installation: pyee 13.0.1
+    Uninstalling pyee-13.0.1:
+      Successfully uninstalled pyee-13.0.1
+  Attempting uninstall: pydantic_core
+    Found existing installation: pydantic_core 2.46.5
+    Uninstalling pydantic_core-2.46.5:
+      Successfully uninstalled pydantic_core-2.46.5
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+playwright 1.62.0 requires pyee<14,>=13, but you have pyee 14.0.0 which is incompatible.
+pydantic 2.13.5 requires pydantic-core==2.46.5, but you have pydantic-core 2.48.0 which is incompatible.
+Successfully installed pydantic_core-2.48.0 pyee-14.0.0
+
+--- docker ---
+ghcr.io/home-assistant/home-assistant:stable
+docker.io/nodered/node-red:latest
+docker.io/portainer/portainer-ce:lts
+docker.io/library/redis:8.2
+docker.io/library/redis:alpine
+docker.io/pgvector/pgvector:pg15
+docker.io/library/postgres:15-alpine
+docker.io/library/postgres:16-alpine
+docker.io/library/node:22-alpine
+docker.io/supabase/studio:2026.07.07-sha-a6a04f2
+docker.io/library/alpine:latest
+docker.io/supabase/postgres:203.0.113.1
+docker.io/supabase/realtime:v2.102.3
+docker.io/supabase/storage-api:v1.60.4
+docker.io/supabase/supavisor:2.9.5
+docker.io/supabase/postgres-meta:v0.96.6
+docker.io/supabase/edge-runtime:v1.74.0
+docker.io/supabase/gotrue:v2.189.0
+ghcr.io/plankanban/planka:2.1.1
+docker.io/library/rabbitmq:3-management
+docker.io/foundationdb/foundationdb:7.3.63
+docker.io/darthsim/imgproxy:v3.30.1
+docker.io/postgrest/postgrest:v14.12
+docker.io/kong/kong:3.9.1
+Total reclaimed space: 0B
+
+--- summary ---
+failures this run:
+!! failed: pipx upgrade-all
+!! failed: docker pull -q anomalist-anomalist:latest
+!! failed: docker pull -q honcho-api:latest
+!! failed: docker pull -q honcho-deriver:latest
+!! failed: docker pull -q firecrawl-api:latest
+!! failed: docker pull -q firecrawl-playwright-service:latest
+!! failed: docker pull -q firecrawl-nuq-postgres:latest
+!! failed: pipx upgrade-all
+!! failed: docker pull -q anomalist-anomalist:latest
+!! failed: docker pull -q honcho-api:latest
+!! failed: docker pull -q honcho-deriver:latest
+!! failed: docker pull -q firecrawl-api:latest
+!! failed: docker pull -q firecrawl-playwright-service:latest
+!! failed: docker pull -q firecrawl-nuq-postgres:latest
+done 2026-09-02T23:30:27-05:00

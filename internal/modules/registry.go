@@ -7,6 +7,7 @@ import (
 	"github.com/zebadrabbit/sitrep/internal/modules/overview"
 	"github.com/zebadrabbit/sitrep/internal/modules/ports"
 	"github.com/zebadrabbit/sitrep/internal/modules/system"
+	"github.com/zebadrabbit/sitrep/internal/modules/updates"
 )
 
 // Register wires the module set. demo routes every collector to fixtures.
@@ -14,4 +15,5 @@ func Register(demo bool) {
 	module.Register(overview.New())
 	module.Register(ports.New(demo))
 	module.Register(system.New(demo))
+	module.Register(updates.New(demo))
 }

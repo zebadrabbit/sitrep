@@ -12,6 +12,7 @@ One line each, with the reason. HANDOFF.md is the contract; this file records wh
 ## v2 (ideas parked here, not built)
 
 - Actions (`systemctl restart`, mounts) — v1 is read-only by contract.
+- **Run `~/update-all.sh` from the Updates tab** (owner asked 2026-09-10). It does apt full-upgrade, docker pulls and service restarts: an action by any reading of §1. v1 shows what it would do and how the last run went; a `u` key that runs it belongs here.
 - `sitrep serve` over SSH via Wish.
 
 ## 2026-09-10 — Phase 1
@@ -24,3 +25,4 @@ One line each, with the reason. HANDOFF.md is the contract; this file records wh
 - **Cold start** in `doctor` is measured by exec'ing `sitrep --once --demo`: real process start to a full frame, not an in-process timer.
 - **System demo fixture** is the collected `Data` as JSON (`system/data.json`) because gopsutil reads /proc directly; there is no command output to capture. Ports goes through the real parsers.
 - **Ports grouping (owner request, 2026-09-10):** rows sharing process name and port fold across addresses and IP families into one leader line (`0.0.0.0:137 +16`), collapsed by default. `space` expands one group in place, `c` shows the flat list. Grouping is by process *name*, not pid, because Docker runs one docker-proxy per IP family. tcp and udp never fold together since CONN only means something for tcp. Not in HANDOFF §6; adds to it without removing anything.
+- **Updates module pulled forward from v1.5** (owner request, 2026-09-10). Read-only: pending apt (security flagged), reboot-required, running vs newest installed kernel, and the last run of the owner's update script parsed from its log (`updates_log`, default `~/update-all.log`). No snap or pip "outdated" checks: those query the network, and the probe is sitrep's only outbound traffic.
