@@ -1,0 +1,6 @@
+dist/
+*.test
+*.out
+.golangci-cache/
+docs/screens/*.txt
+!docs/screens/.gitkeep
