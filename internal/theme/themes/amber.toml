@@ -6,4 +6,5 @@ ok     = "#7CB342"
 warn   = "#F5A623"
 crit   = "#E53935"
 dim    = "#6B6B6B"
+port   = "#4DD0E1"   # port numbers in the Ports tab
 ascii  = false

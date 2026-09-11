@@ -292,16 +292,16 @@ func cellsFor(d disp) []string {
 	r := d.Row
 	s := theme.Current()
 	g := s.Glyph
-	addr := clip(addrPort(r), 24)
+	addr := addrPort(r, 24)
 	switch {
 	case d.Member:
-		addr = "└ " + clip(addrPort(r), 22)
+		addr = "└ " + addrPort(r, 22)
 	case len(d.Members) > 0:
 		mark := "+"
 		if d.Expanded {
 			mark = "−"
 		}
-		addr = clip(addrPort(r), 19) + " " + s.Dim.Render(fmt.Sprintf("%s%d", mark, len(d.Members)))
+		addr = addrPort(r, 19) + " " + s.Dim.Render(fmt.Sprintf("%s%d", mark, len(d.Members)))
 	}
 	proc, user, age := s.Warn.Render(g.Degraded), s.Warn.Render(g.Degraded), s.Warn.Render(g.Degraded)
 	if r.Process != "" {
@@ -351,11 +351,18 @@ func clip(s string, n int) string {
 	return string(r[:n-1]) + "…"
 }
 
-func addrPort(r Row) string {
-	if strings.Contains(r.Addr, ":") {
-		return "[" + r.Addr + "]:" + strconv.Itoa(r.Port)
+// addrPort renders addr:port within n cells, clipping the address (never
+// the port) and painting the port with theme.Port.
+func addrPort(r Row, n int) string {
+	addr := r.Addr
+	if strings.Contains(addr, ":") {
+		addr = "[" + addr + "]"
 	}
-	return r.Addr + ":" + strconv.Itoa(r.Port)
+	port := strconv.Itoa(r.Port)
+	if n > 0 {
+		addr = clip(addr, max(3, n-len(port)-1))
+	}
+	return addr + ":" + theme.Current().Port.Render(port)
 }
 
 func ageStr(d time.Duration) string { return ui.Age(d) }
@@ -375,7 +382,7 @@ func (m *Module) detailView(r Row, w, h int) string {
 		fds = strconv.Itoa(d.FDs)
 	}
 	lines := []string{
-		s.Bold.Render(addrPort(r)) + "  " + r.Proto + "  " + ui.Check(Glyph(r.Identity.Source, struct{ OK, Degraded, Fail string }{s.Glyph.OK, s.Glyph.Degraded, s.Glyph.Fail})) + " " + r.Identity.Name,
+		s.Bold.Render(addrPort(r, 0)) + "  " + r.Proto + "  " + ui.Check(Glyph(r.Identity.Source, struct{ OK, Degraded, Fail string }{s.Glyph.OK, s.Glyph.Degraded, s.Glyph.Fail})) + " " + r.Identity.Name,
 		"",
 		kv("process", val(r.Process)) + "   " + kv("pid/ppid", fmt.Sprintf("%d/%d", r.PID, r.PPID)) + "   " + kv("user", val(r.User)),
 		kv("cmdline", val(d.Cmdline)),

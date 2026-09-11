@@ -27,6 +27,7 @@ type Theme struct {
 	Warn   string `toml:"warn"`
 	Crit   string `toml:"crit"`
 	Dim    string `toml:"dim"`
+	Port   string `toml:"port"` // port numbers; empty = bold only
 	ASCII  bool   `toml:"ascii"`
 }
 
@@ -45,7 +46,9 @@ type Styles struct {
 	Accent, OK, Warn, Crit, Dim, Bold lipgloss.Style
 	// Hotkey is the one style for hotkey characters, everywhere (HANDOFF §10.6).
 	Hotkey lipgloss.Style
-	Glyph  Glyphs
+	// Port colors port numbers so they can be picked out of a row at a glance.
+	Port  lipgloss.Style
+	Glyph Glyphs
 }
 
 var (
@@ -146,6 +149,7 @@ func (t Theme) styles() Styles {
 		s.Dim = s.Dim.Faint(true)
 	}
 	s.Bold = lipgloss.NewStyle().Bold(true)
+	s.Port = fg(t.Port).Bold(true)
 	s.Hotkey = fg(t.Accent).Bold(true).Underline(t.Accent == "")
 	return s
 }
