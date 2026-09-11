@@ -87,7 +87,7 @@ func (m *Module) Detect(_ context.Context, env detect.Env) module.Availability {
 	if !detect.Has("systemctl") && !detect.Has("crontab") {
 		return module.Availability{State: module.Missing, Reason: "neither systemctl nor crontab found"}
 	}
-	if !env.Root {
+	if !env.Root && !env.Caps {
 		return module.Availability{State: module.NeedsRoot, Reason: "other users' crontabs need root"}
 	}
 	return module.Availability{State: module.Available, Reason: "systemd timers + crontabs"}

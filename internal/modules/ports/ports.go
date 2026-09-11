@@ -148,7 +148,7 @@ func (m *Module) Detect(_ context.Context, env detect.Env) module.Availability {
 	switch {
 	case !detect.Has("ss"):
 		return module.Availability{State: module.Degraded, Reason: "ss missing (iproute2); using /proc/net fallback"}
-	case !env.Root:
+	case !env.Root && !env.Caps:
 		return module.Availability{State: module.NeedsRoot, Reason: "unprivileged: other users' pids show as ◐"}
 	}
 	return module.Availability{State: module.Available, Reason: "ss + /proc"}
