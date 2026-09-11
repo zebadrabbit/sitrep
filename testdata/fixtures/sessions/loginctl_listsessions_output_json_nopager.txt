@@ -1,0 +1,1 @@
+[{"session":"626","uid":1000,"user":"user","seat":null,"tty":"pts/0","state":"active","idle":false,"since":null},{"session":"628","uid":1000,"user":"user","seat":null,"tty":null,"state":"active","idle":false,"since":null}]

@@ -1,0 +1,5 @@
+clientid: 0x1
+address: "10.0.0.7:770"
+status: confirmed
+name: "Linux NFSv4.2 example-client"
+minor version: 2

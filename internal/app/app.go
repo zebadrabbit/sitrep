@@ -40,7 +40,8 @@ type Options struct {
 	Mode     Mode
 	Demo     bool
 	Entries  []module.Entry
-	Active   string // module id to open first ("" = overview)
+	Active   string   // module id to open first ("" = overview)
+	Dense    []string // module ids for --view dense boxes (config dense_modules)
 }
 
 // Model is the root Bubble Tea model.
@@ -180,9 +181,12 @@ func (m Model) Render(w, h int) string {
 	if w == 0 || h == 0 {
 		return ""
 	}
-	if m.mode == Dense && (w < denseW || h < denseH) {
-		msg := fmt.Sprintf("dense layout needs %dx%d, terminal is %dx%d", denseW, denseH, w, h)
-		return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, theme.Current().Warn.Render(msg))
+	if m.mode == Dense {
+		if w < denseW || h < denseH {
+			msg := fmt.Sprintf("dense layout needs %dx%d, terminal is %dx%d", denseW, denseH, w, h)
+			return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, theme.Current().Warn.Render(msg))
+		}
+		return m.dense(w, h)
 	}
 	body := m.body(w, h-2)
 	if m.help {
@@ -363,4 +367,51 @@ func (m Model) helpOverlay(w, h int) string {
 	box := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(s.Accent.GetForeground()).Padding(0, 2).
 		Render(strings.Join(rows, "\n"))
 	return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, box)
+}
+
+// dense is the zero-chrome grid: 2×2 for up to four modules, 3×2 for up to
+// six, each box showing the module's full View. Ports gets a full column
+// when it is present (HANDOFF §6): it is listed first and spans both rows.
+func (m Model) dense(w, h int) string {
+	var ents []module.Entry
+	for _, id := range m.opts.Dense {
+		for _, ti := range m.tabs {
+			if e := m.entries[ti]; e.Module.ID() == id && e.Module.Interval() > 0 {
+				ents = append(ents, e)
+			}
+		}
+	}
+	if len(ents) == 0 {
+		return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, theme.Current().Dim.Render("dense_modules in config is empty"))
+	}
+	boxes := func(es []module.Entry, bw, bh int) []string {
+		out := make([]string, 0, len(es))
+		for _, e := range es {
+			view := e.Module.View(m.store[e.Module.ID()].data, bw-2, bh-2)
+			out = append(out, lipgloss.NewStyle().Height(bh).MaxHeight(bh).Render(ui.Box(e.Module.Title(), view, bw)))
+		}
+		return out
+	}
+	// Ports column on the left, everything else in a 2-row grid on the right.
+	var left string
+	rest := ents
+	if ents[0].Module.ID() == "ports" {
+		colW := w / 3
+		left = boxes(ents[:1], colW, h)[0]
+		rest = ents[1:]
+		w -= colW
+	}
+	rows := 2
+	cols := max(1, (len(rest)+rows-1)/rows)
+	bw, bh := w/cols, h/rows
+	grid := make([]string, 0, rows)
+	for r := 0; r < rows && r*cols < len(rest); r++ {
+		hi := min(len(rest), (r+1)*cols)
+		grid = append(grid, lipgloss.JoinHorizontal(lipgloss.Top, boxes(rest[r*cols:hi], bw, bh)...))
+	}
+	right := lipgloss.JoinVertical(lipgloss.Left, grid...)
+	if left == "" {
+		return right
+	}
+	return lipgloss.JoinHorizontal(lipgloss.Top, left, right)
 }

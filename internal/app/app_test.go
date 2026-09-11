@@ -36,6 +36,13 @@ func TestFullStaysFull(t *testing.T) {
 	}
 }
 
+func TestDenseEmptyConfig(t *testing.T) {
+	m := sized(New(Options{Mode: Dense}), 130, 44)
+	if out := m.Render(130, 44); !strings.Contains(out, "dense_modules") {
+		t.Error("expected empty-config notice")
+	}
+}
+
 func TestDenseRefusesSmall(t *testing.T) {
 	m := sized(New(Options{Mode: Dense}), 100, 30)
 	if !strings.Contains(m.Render(100, 30), "dense layout needs") {

@@ -1,0 +1,41 @@
+# Global parameters
+[global]
+	log file = /var/log/samba/log.%m
+	logging = file
+	map to guest = Bad User
+	max log size = 1000
+	obey pam restrictions = Yes
+	pam password change = Yes
+	panic action = /usr/share/samba/panic-action %d
+	passwd chat = *Enter\snew\s*\spassword:* %n\n *Retype\snew\s*\spassword:* %n\n *password\supdated\ssuccessfully* .
+	passwd program = /usr/bin/passwd %u
+	server role = standalone server
+	server string = %h server (Samba, Ubuntu)
+	unix password sync = Yes
+	usershare allow guests = Yes
+	idmap config * : backend = tdb
+	sync always = Yes
+
+
+[homes]
+	browseable = No
+	comment = Home Directories
+	create mask = 0700
+	directory mask = 0700
+	hide dot files = No
+	read only = No
+	valid users = %S
+
+
+[clippy_instance]
+	browseable = No
+	comment = Clippy Instance Directory
+	create mask = 0640
+	directory mask = 0750
+	force user = user
+	hosts allow = 127.0.0.1 10.0.1.0/24
+	hosts deny = 0.0.0.0/0
+	kernel oplocks = Yes
+	path = /home/user/work/ClippyFront/instance
+	read only = No
+	valid users = clippy

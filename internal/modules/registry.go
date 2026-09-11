@@ -6,10 +6,14 @@ import (
 	"github.com/zebadrabbit/sitrep/internal/module"
 	"github.com/zebadrabbit/sitrep/internal/modules/disks"
 	"github.com/zebadrabbit/sitrep/internal/modules/docker"
+	"github.com/zebadrabbit/sitrep/internal/modules/logs"
 	"github.com/zebadrabbit/sitrep/internal/modules/network"
+	"github.com/zebadrabbit/sitrep/internal/modules/nfs"
 	"github.com/zebadrabbit/sitrep/internal/modules/overview"
 	"github.com/zebadrabbit/sitrep/internal/modules/ports"
+	"github.com/zebadrabbit/sitrep/internal/modules/samba"
 	"github.com/zebadrabbit/sitrep/internal/modules/services"
+	"github.com/zebadrabbit/sitrep/internal/modules/sessions"
 	"github.com/zebadrabbit/sitrep/internal/modules/system"
 	"github.com/zebadrabbit/sitrep/internal/modules/updates"
 )
@@ -37,5 +41,9 @@ func Register(demo bool) {
 	module.Register(disks.New(demo))
 	module.Register(network.New(demo))
 	module.Register(d)
+	module.Register(samba.New(demo))
+	module.Register(nfs.New(demo))
+	module.Register(sessions.New(demo))
+	module.Register(logs.New(demo))
 	module.Register(updates.New(demo))
 }

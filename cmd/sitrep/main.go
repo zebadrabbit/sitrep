@@ -2,10 +2,12 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -94,7 +96,8 @@ func runTUI(cmd *cobra.Command, args []string) error {
 	if len(args) == 1 {
 		active = args[0]
 	}
-	m := app.New(app.Options{Hostname: host, Mode: mode(), Demo: flags.demo, Entries: entries, Active: active})
+	cfg, _, _ := config.Load()
+	m := app.New(app.Options{Hostname: host, Mode: mode(), Demo: flags.demo, Entries: entries, Active: active, Dense: cfg.DenseModules})
 	if flags.once {
 		w, h := frameSize()
 		r, _ := m.Update(tea.WindowSizeMsg{Width: w, Height: h})
@@ -219,8 +222,53 @@ func modulesCmd() *cobra.Command {
 			fmt.Fprintf(cmd.OutOrStdout(), "%s — %s\n\n%s\n", m.ID(), m.Title(), m.Info())
 			return nil
 		}},
+		&cobra.Command{Use: "enable <id>", Short: "Enable a module; acknowledges appliance_sensitive once", Args: cobra.ExactArgs(1), RunE: func(cmd *cobra.Command, args []string) error {
+			return setEnabled(cmd, args[0], true)
+		}},
+		&cobra.Command{Use: "disable <id>", Short: "Disable a module", Args: cobra.ExactArgs(1), RunE: func(cmd *cobra.Command, args []string) error {
+			return setEnabled(cmd, args[0], false)
+		}},
 	)
 	return c
+}
+
+// setEnabled edits config: disabled list, and on an appliance the one-time
+// ack for appliance_sensitive modules (HANDOFF §1: warn once, then trust).
+func setEnabled(cmd *cobra.Command, id string, on bool) error {
+	modules.Register(false)
+	m, ok := module.Lookup(id)
+	if !ok {
+		return fmt.Errorf("unknown module %q", id)
+	}
+	cfg, _, err := config.Load()
+	if err != nil {
+		return err
+	}
+	env := detect.Detect()
+	if on && m.Flags().ApplianceSensitive && env.Appliance != "" && !cfg.Acked(id) {
+		fmt.Fprintf(cmd.OutOrStdout(), "%s looks like a %s appliance. %s reads its shares/exports directly; the\nappliance UI is the source of truth. Enable anyway? [y/N] ", id, env.Appliance, m.Title())
+		line, _ := bufio.NewReader(cmd.InOrStdin()).ReadString('\n')
+		if l := strings.ToLower(strings.TrimSpace(line)); l != "y" && l != "yes" {
+			return fmt.Errorf("not enabled")
+		}
+		cfg.Acks = append(cfg.Acks, id)
+	}
+	cfg.Disabled = slices.DeleteFunc(cfg.Disabled, func(s string) bool { return s == id })
+	if !on {
+		cfg.Disabled = append(cfg.Disabled, id)
+	}
+	if err := os.MkdirAll(config.Dir(), 0o755); err != nil {
+		return err
+	}
+	if err := cfg.Save(config.Path()); err != nil {
+		return err
+	}
+	state := "disabled"
+	if on {
+		state = "enabled"
+	}
+	fmt.Fprintf(cmd.OutOrStdout(), "%s %s (%s)\n", id, state, config.Path())
+	return nil
 }
 
 func mode() app.Mode {

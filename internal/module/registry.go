@@ -2,6 +2,7 @@ package module
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/zebadrabbit/sitrep/internal/config"
 	"github.com/zebadrabbit/sitrep/internal/detect"
@@ -32,6 +33,10 @@ func Resolve(ctx context.Context, env detect.Env, cfg config.Config) []Entry {
 	n := 0
 	for _, m := range registry {
 		e := Entry{Module: m, Avail: m.Detect(ctx, env)}
+		if m.Flags().ApplianceSensitive && env.Appliance != "" && !cfg.Acked(m.ID()) &&
+			e.Avail.State != Missing && e.Avail.State != Unsupported {
+			e.Avail = Availability{State: NeedsAck, Reason: fmt.Sprintf("%s detected — `sitrep modules enable %s` to acknowledge", env.Appliance, m.ID())}
+		}
 		e.Enabled = enabled(m, e.Avail, env, cfg)
 		if e.Enabled && n < len(hot) {
 			e.Hotkey = hot[n]
