@@ -30,6 +30,7 @@ import (
 
 var flags struct {
 	demo, once, lite, json bool
+	keys                   string
 	view, size             string
 }
 
@@ -64,7 +65,9 @@ func root() *cobra.Command {
 	f.BoolVar(&flags.lite, "lite", false, "single 80x24 screen, no sidebar")
 	f.StringVar(&flags.view, "view", "", "layout: full|lite|dense")
 	f.StringVar(&flags.size, "size", "", "frame size for --once, e.g. 100x30 (default: terminal)")
+	f.StringVar(&flags.keys, "keys", "", "keys to press before rendering with --once, e.g. j,j,enter")
 	_ = f.MarkHidden("size")
+	_ = f.MarkHidden("keys")
 	r.PersistentFlags().BoolVar(&flags.json, "json", false, "machine-readable output")
 	r.PersistentFlags().BoolVar(&flags.demo, "demo", false, "run against bundled fixtures; no host access")
 
@@ -102,7 +105,7 @@ func runTUI(cmd *cobra.Command, args []string) error {
 	if flags.once {
 		w, h := frameSize()
 		r, _ := m.Update(tea.WindowSizeMsg{Width: w, Height: h})
-		fmt.Fprintln(cmd.OutOrStdout(), r.(app.Model).Once(w, h))
+		fmt.Fprintln(cmd.OutOrStdout(), r.(app.Model).Once(w, h, keyMsgs(flags.keys)))
 		return nil
 	}
 	_, err := tea.NewProgram(m).Run()
@@ -280,6 +283,23 @@ func mode() app.Mode {
 		return app.Lite
 	}
 	return app.Full
+}
+
+// keyMsgs turns "j,j,enter" into key presses for --once screenshots.
+func keyMsgs(spec string) []tea.KeyPressMsg {
+	named := map[string]rune{"enter": tea.KeyEnter, "esc": tea.KeyEscape, "tab": tea.KeyTab, "space": tea.KeySpace, "up": tea.KeyUp, "down": tea.KeyDown}
+	var out []tea.KeyPressMsg
+	for _, k := range strings.Split(spec, ",") {
+		switch {
+		case k == "":
+		case named[k] != 0:
+			out = append(out, tea.KeyPressMsg{Code: named[k]})
+		default:
+			r := []rune(k)[0]
+			out = append(out, tea.KeyPressMsg{Code: r, Text: string(r)})
+		}
+	}
+	return out
 }
 
 // frameSize honors --size, then the terminal, then 100x30.

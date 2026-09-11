@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"slices"
 	"sort"
 	"strings"
@@ -14,6 +15,7 @@ import (
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 
 	"github.com/zebadrabbit/sitrep/internal/collect"
 	"github.com/zebadrabbit/sitrep/internal/detect"
@@ -288,6 +290,9 @@ func (m *Module) Collect(ctx context.Context) (module.Data, error) {
 	if b, err := m.run.ReadFile("/proc/net/dev"); err == nil {
 		m.rates(ParseNetDev(b), &d)
 	}
+	if m.demo {
+		m.demoTick(d.Ifaces)
+	}
 	for i := range d.Ifaces {
 		in := &d.Ifaces[i]
 		in.Default = in.Name == d.DefaultIf
@@ -336,6 +341,42 @@ func (m *Module) rates(cur map[string][2]uint64, d *Data) {
 		}
 	}
 	m.prev, m.prevAt = cur, d.Collected
+}
+
+// demoTick synthesizes traffic for the demo fixture, which has one counter
+// sample and so no rates: 8 minutes of history on the first call, one more
+// sample per collection after that, rates set from the latest sample.
+// ponytail: a sine plus a hash, not a model.
+func (m *Module) demoTick(ifaces []Iface) {
+	for n := range ifaces {
+		in := &ifaces[n]
+		if in.State != "up" && in.Kind != "wireguard" {
+			continue
+		}
+		h := m.hist[in.Name]
+		if h == nil {
+			h = &[2][]float64{}
+			m.hist[in.Name] = h
+		}
+		for len(h[0]) < 240 || len(h[0]) == 240 && in.RxRate == 0 {
+			rx, tx := demoSample(n, len(h[0]))
+			h[0], h[1] = push(h[0], rx), push(h[1], tx)
+			in.RxRate, in.TxRate = rx, tx
+		}
+	}
+}
+
+func demoSample(n, i int) (rx, tx float64) {
+	base := 40e3 / float64(n+1)
+	seed := uint32(n*7919+i)*1664525 + 1013904223
+	seed = seed*1664525 + 1013904223
+	noise := float64(seed>>16&0xff) / 255
+	wave := 1 + 0.6*math.Sin(float64(i)/9+float64(n))
+	burst := 0.0
+	if seed>>8&0x3f == 0 {
+		burst = base * 6
+	}
+	return base*wave*(0.5+noise) + burst, base*0.3*wave*(0.4+noise) + burst*0.2
 }
 
 func push(h []float64, v float64) []float64 {
@@ -472,6 +513,7 @@ func (m *Module) panels(charts []string, w, rows int) string {
 			rx, tx = h[0], h[1]
 		}
 		title := s.Bold.Render(name) + "  " + s.OK.Render("▲ rx") + " " + s.Accent.Render("▼ tx") + "  " + s.Dim.Render(peakStr(rx, tx))
+		title = lipgloss.NewStyle().MaxWidth(colW - 1).Render(title) // truncate, never wrap into the graph
 		blocks = append(blocks, title+"\n"+ui.Mirror(rx, tx, colW-1, rows))
 	}
 	return ui.Columns(blocks, len(blocks), w)

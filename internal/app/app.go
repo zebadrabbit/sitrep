@@ -76,7 +76,8 @@ func New(o Options) Model {
 
 // Once collects every module synchronously and renders one frame. Used by
 // --once for screenshots and scripts; the TUI never blocks like this.
-func (m Model) Once(w, h int) string {
+// keys are pressed after collection, so screenshots can show a detail pane.
+func (m Model) Once(w, h int, keys []tea.KeyPressMsg) string {
 	enabled := make([]module.Entry, 0, len(m.tabs))
 	for _, ti := range m.tabs {
 		enabled = append(enabled, m.entries[ti])
@@ -87,6 +88,13 @@ func (m Model) Once(w, h int) string {
 		}
 		msg := collectCmd(e.Module)().(module.DataMsg)
 		r, _ := m.onData(msg)
+		m = r.(Model)
+	}
+	if len(keys) > 0 {
+		m.Render(w, h) // views record what is visible; keys index that list
+	}
+	for _, k := range keys {
+		r, _ := m.Update(k)
 		m = r.(Model)
 	}
 	return m.Render(w, h)
