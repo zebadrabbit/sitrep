@@ -37,6 +37,10 @@ func privileges() Section {
 	exe, _ := os.Executable()
 	cs = append(cs, Check{Degraded, "capabilities", "none — for full view without sudo:"})
 	cs = append(cs, Check{Degraded, "", fmt.Sprintf("sudo setcap %s+ep %s", wantCaps, exe)})
+	if home, _ := os.UserHomeDir(); home != "" && strings.HasPrefix(exe, home+"/") {
+		// sudo's secure_path drops ~/.local/bin, so `sudo sitrep` says command not found.
+		cs = append(cs, Check{Degraded, "", "or, with sudo (binary is under $HOME, not on root's PATH): sudo " + exe + " doctor"})
+	}
 	return Section{"Privileges", cs}
 }
 
