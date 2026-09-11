@@ -153,6 +153,14 @@ func TestEmbeddedFixtureRendersAllViews(t *testing.T) {
 	if !strings.Contains(list, "IDENTITY") || strings.Count(list, "\n") > 27 {
 		t.Errorf("list view wrong shape (%d lines)", strings.Count(list, "\n"))
 	}
+	if !strings.Contains(list, "groups") || strings.Contains(list, "└") {
+		t.Errorf("expected grouped, collapsed list by default")
+	}
+	m.ui.flat = true
+	if fl := m.View(d, 100, 0); strings.Count(fl, "\n") < pd.Listening {
+		t.Errorf("flat view should list every listener")
+	}
+	m.ui.flat = false
 	m.ui.detail = true
 	if det := m.View(d, 100, 28); !strings.Contains(det, "identity") || !strings.Contains(det, "probe") {
 		t.Errorf("detail view missing sections:\n%s", det)

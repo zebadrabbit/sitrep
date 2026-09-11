@@ -113,6 +113,8 @@ name table (●), curated port table ports.toml (◐, override in
 ~/.config/sitrep/ports.toml), /etc/services (◐), heuristic (○).
 Execs:    ss -tulnpH, ss -tunaH. Falls back to /proc/net/{tcp,udp}{,6} + a
 /proc/*/fd scan when ss is missing.
+Rows are grouped by process and port across addresses and IPv4/IPv6 (nmbd on
+16 addresses is one row). space expands a group in place; c shows the flat list.
 Probe (p in detail): the ONLY outbound network activity sitrep performs, only
 on keypress, only to 127.0.0.1:<port>. HEAD / for http-ish identities,
 otherwise the first 128 bytes of banner, 1s timeout.

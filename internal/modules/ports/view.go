@@ -38,7 +38,9 @@ type uiState struct {
 	detailKey string
 	probe     string
 	probing   bool
-	visible   []Row // rows as last rendered, so keys index the same list
+	flat      bool            // c: no grouping
+	expanded  map[string]bool // space: groups opened in place
+	visible   []disp          // lines as last rendered, so keys index the same list
 }
 
 type probeMsg struct {
@@ -51,6 +53,8 @@ var keys = []key.Binding{
 	key.NewBinding(key.WithKeys("s"), key.WithHelp("s", "sort")),
 	key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "filter")),
 	key.NewBinding(key.WithKeys("L"), key.WithHelp("L", "loopback")),
+	key.NewBinding(key.WithKeys(" "), key.WithHelp("space", "expand")),
+	key.NewBinding(key.WithKeys("c"), key.WithHelp("c", "flat")),
 	key.NewBinding(key.WithKeys("p"), key.WithHelp("p", "probe")),
 }
 
@@ -100,8 +104,20 @@ func (m *Module) key(k tea.KeyPressMsg) tea.Cmd {
 		u.sel = len(u.visible) - 1
 	case "enter":
 		if u.sel < len(u.visible) {
-			u.detail, u.detailKey, u.probe = true, rowKey(u.visible[u.sel]), ""
+			u.detail, u.detailKey, u.probe = true, rowKey(u.visible[u.sel].Row), ""
 		}
+	case "space":
+		if u.sel < len(u.visible) {
+			if d := u.visible[u.sel]; d.Key != "" && !d.Member {
+				if u.expanded == nil {
+					u.expanded = map[string]bool{}
+				}
+				u.expanded[d.Key] = !u.expanded[d.Key]
+			}
+		}
+	case "c":
+		u.flat = !u.flat
+		u.sel = 0
 	case "esc":
 		u.detail, u.filter = false, ""
 	case "s":
@@ -113,7 +129,7 @@ func (m *Module) key(k tea.KeyPressMsg) tea.Cmd {
 	case "p":
 		if u.detail && !u.probing && u.sel < len(u.visible) {
 			u.probing = true
-			r := u.visible[u.sel]
+			r := u.visible[u.sel].Row
 			return probeCmd(rowKey(r), r.Port, r.Identity.HTTP)
 		}
 	}
@@ -152,14 +168,18 @@ func (m *Module) View(d module.Data, w, h int) string {
 	}
 	rows := m.filtered(pd.Rows)
 	sort.SliceStable(rows, func(i, j int) bool { return less(rows[i], rows[j], m.ui.sort) })
-	m.ui.visible = rows
-	if m.ui.sel >= len(rows) {
-		m.ui.sel = max(0, len(rows)-1)
+	lines := flat(rows)
+	if !m.ui.flat {
+		lines = group(rows, m.ui.expanded)
 	}
-	if m.ui.detail && len(rows) > 0 {
-		return m.detailView(rows[m.ui.sel], w, h)
+	m.ui.visible = lines
+	if m.ui.sel >= len(lines) {
+		m.ui.sel = max(0, len(lines)-1)
 	}
-	return m.listView(rows, w, h, pd.Fallback)
+	if m.ui.detail && len(lines) > 0 {
+		return m.detailView(lines[m.ui.sel].Row, w, h)
+	}
+	return m.listView(lines, len(rows), w, h, pd.Fallback)
 }
 
 func (m *Module) filtered(rows []Row) []Row {
@@ -205,12 +225,12 @@ func less(a, b Row, mode sortMode) bool {
 	return a.Addr < b.Addr
 }
 
-func (m *Module) listView(rows []Row, w, h int, fallback bool) string {
+func (m *Module) listView(rows []disp, total, w, h int, fallback bool) string {
 	s := theme.Current()
 	header := []string{"PROTO", "ADDR:PORT", "PROCESS", "USER", "AGE", "CONN", "IDENTITY"}
 	cells := make([][]string, 0, len(rows))
-	for _, r := range rows {
-		cells = append(cells, cellsFor(r))
+	for _, d := range rows {
+		cells = append(cells, cellsFor(d))
 	}
 	// Lite (80 cols) has no room for USER; the detail pane still shows it.
 	if w < 90 {
@@ -232,21 +252,25 @@ func (m *Module) listView(rows []Row, w, h int, fallback bool) string {
 	lines := strings.Split(table, "\n")
 	lines[0] = " " + lines[0]
 	for i := range lines[1:] {
-		r := rows[lo+i]
+		d := rows[lo+i]
 		cursor := " "
 		if h > 0 && lo+i == m.ui.sel {
 			cursor = s.Accent.Render("▎")
 		}
 		switch {
-		case r.Gone:
+		case d.Row.Gone:
 			lines[i+1] = cursor + s.Dim.Strikethrough(true).Render(stripANSI(lines[i+1]))
-		case r.Loopback:
+		case d.Row.Loopback, d.Member:
 			lines[i+1] = cursor + s.Dim.Render(stripANSI(lines[i+1]))
 		default:
 			lines[i+1] = cursor + lines[i+1]
 		}
 	}
-	status := fmt.Sprintf("%d shown · sort %s", len(rows), m.ui.sort)
+	status := fmt.Sprintf("%d listeners", total)
+	if !m.ui.flat {
+		status += fmt.Sprintf(" in %d groups", len(rows))
+	}
+	status += " · sort " + m.ui.sort.String()
 	if m.ui.hideLoop {
 		status += " · loopback hidden"
 	}
@@ -262,13 +286,26 @@ func (m *Module) listView(rows []Row, w, h int, fallback bool) string {
 	return strings.Join(append(lines, s.Dim.Render(status)), "\n")
 }
 
-// cellsFor renders one row's columns with glyphs.
-func cellsFor(r Row) []string {
+// cellsFor renders one line's columns with glyphs. Group leaders show the
+// fold count after the address; expanded members hang under them.
+func cellsFor(d disp) []string {
+	r := d.Row
 	s := theme.Current()
 	g := s.Glyph
+	addr := clip(addrPort(r), 24)
+	switch {
+	case d.Member:
+		addr = "└ " + clip(addrPort(r), 22)
+	case len(d.Members) > 0:
+		mark := "+"
+		if d.Expanded {
+			mark = "−"
+		}
+		addr = clip(addrPort(r), 19) + " " + s.Dim.Render(fmt.Sprintf("%s%d", mark, len(d.Members)))
+	}
 	proc, user, age := s.Warn.Render(g.Degraded), s.Warn.Render(g.Degraded), s.Warn.Render(g.Degraded)
 	if r.Process != "" {
-		proc = clip(r.Process, 15) + " (" + strconv.Itoa(r.PID) + ")"
+		proc = clip(r.Process, 12) + " (" + strconv.Itoa(r.PID) + ")"
 		if r.Identity.Source == SrcDocker {
 			proc = "docker" + g.Sep + "?"
 		}
@@ -288,7 +325,18 @@ func cellsFor(r Row) []string {
 		mark = s.OK.Render(g.New)
 	}
 	conf := ui.Check(Glyph(r.Identity.Source, struct{ OK, Degraded, Fail string }{g.OK, g.Degraded, g.Fail}))
-	return []string{mark + r.Proto, clip(addrPort(r), 24), proc, user, age, conn, conf + " " + r.Identity.Name}
+	if d.Member {
+		// Members only repeat what differs from the leader: the pid.
+		proc, user, age, conn = "", "", "", strconv.Itoa(r.Conn)
+		if r.PID != d.LeaderPID && r.PID > 0 {
+			proc = "(" + strconv.Itoa(r.PID) + ")"
+		}
+		if strings.HasPrefix(r.Proto, "udp") {
+			conn = ""
+		}
+		return []string{" " + r.Proto, addr, proc, user, age, conn, ""}
+	}
+	return []string{mark + r.Proto, addr, proc, user, age, conn, conf + " " + r.Identity.Name}
 }
 
 // clip truncates to n cells with an ellipsis; column widths stay sane on
