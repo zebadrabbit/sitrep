@@ -125,3 +125,7 @@ parsers, so it doubles as an integration test of the render path.
 before the frame is captured.
 
 Read-only, always. Actions are a v2 conversation (docs/DECISIONS.md).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
