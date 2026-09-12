@@ -16,7 +16,6 @@ import (
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 
 	"github.com/zebadrabbit/sitrep/internal/collect"
 	"github.com/zebadrabbit/sitrep/internal/detect"
@@ -488,7 +487,7 @@ func (m *Module) View(d module.Data, w, h int) string {
 	graphRows := 3
 	listH := len(rows) + 1
 	if h > 0 {
-		listH = max(3, h-2*graphRows-4)
+		listH = max(3, h-2*graphRows-8) // head 2, blanks 2, "… more" 1, box 2 + legend 1 + 2*rows
 	}
 	lo, hi := 0, len(rows)
 	if len(rows) > listH-1 {
@@ -530,12 +529,14 @@ func (m *Module) panels(charts []string, ifaces []Iface, w, rows int) string {
 		if h := m.hist[name]; h != nil {
 			rx, tx = h[0], h[1]
 		}
-		title := s.Bold.Render(name) + "  " + s.OK.Render("▲ rx") + " " + s.Accent.Render("▼ tx") + "  " + s.Dim.Render(peakStr(rx, tx))
+		legend := s.OK.Render("▲ rx") + " " + s.Accent.Render("▼ tx") + "  " + s.Dim.Render(peakStr(rx, tx))
 		if hw := hwStr(ifaces, name); hw != "" {
-			title += "  " + s.Dim.Render(hw)
+			legend += "  " + s.Dim.Render(hw)
 		}
-		title = lipgloss.NewStyle().MaxWidth(colW - 1).Render(title) // truncate, never wrap into the graph
-		blocks = append(blocks, title+"\n"+ui.Mirror(rx, tx, colW-1, rows))
+		// The box frames the graph so the peak line has a visible ceiling;
+		// Box truncates the legend, so it never wraps into the graph.
+		inner := colW - 3
+		blocks = append(blocks, ui.Box(name, legend+"\n"+ui.Mirror(rx, tx, inner, rows), colW-1))
 	}
 	return ui.Columns(blocks, len(blocks), w)
 }

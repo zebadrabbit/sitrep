@@ -82,8 +82,8 @@ func TestPanelKeys(t *testing.T) {
 	}
 	m.hist["eth0"] = &[2][]float64{{1, 2, 3}, {3, 2, 1}}
 	out := m.panels([]string{"eth0", "wg0"}, nil, 80, 2)
-	if !strings.Contains(out, "eth0") || !strings.Contains(out, "wg0") || strings.Count(out, "\n") != 4 {
-		t.Fatalf("two panels side by side, 5 lines: %q", out)
+	if !strings.Contains(out, "eth0") || !strings.Contains(out, "wg0") || strings.Count(out, "\n") != 6 {
+		t.Fatalf("two panels side by side, 7 lines (border + legend + 2 rows × 2 + border): %q", out)
 	}
 }
 
