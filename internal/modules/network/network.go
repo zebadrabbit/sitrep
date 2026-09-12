@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"os"
 	"slices"
 	"sort"
 	"strings"
@@ -42,11 +43,16 @@ type Iface struct {
 	TxBytes uint64   `json:"tx_bytes"`
 	RxRate  float64  `json:"rx_rate"` // bytes/s since last collection
 	TxRate  float64  `json:"tx_rate"`
-	Default bool     `json:"default"` // carries the default route
+	Default bool     `json:"default"`          // carries the default route
+	Driver  string   `json:"driver,omitempty"` // physical NICs only, from sysfs
+	Link    string   `json:"link,omitempty"`   // "1G full"; "" when down or virtual
+	Model   string   `json:"model,omitempty"`  // from lspci, by PCI address
 }
 
 // Data is one collection.
 type Data struct {
+	Hostname  string    `json:"hostname"`
+	Firewall  Firewall  `json:"firewall"`
 	Ifaces    []Iface   `json:"ifaces"`
 	Gateway   string    `json:"gateway"`
 	DefaultIf string    `json:"default_if"`
@@ -59,12 +65,13 @@ type Data struct {
 }
 
 type Module struct {
-	run    *collect.Runner
-	demo   bool
-	prev   map[string][2]uint64
-	prevAt time.Time
-	hist   map[string]*[2][]float64 // per iface: rx, tx bytes/s
-	ui     uiState
+	run      *collect.Runner
+	demo     bool
+	prev     map[string][2]uint64
+	prevAt   time.Time
+	hist     map[string]*[2][]float64 // per iface: rx, tx bytes/s
+	ui       uiState
+	pciNames map[string]string // lspci once: PCI address → model
 }
 
 type uiState struct {
@@ -92,11 +99,15 @@ var keys = []key.Binding{
 func (*Module) Info() string {
 	return `Collects: interfaces with addresses, state, kind (wireguard/tailscale/bridge/
 veth labeled), rx/tx rates from /proc/net/dev deltas, the default route and
-gateway, DNS servers. A mirrored braille graph (rx up, tx down) of the last
+gateway, DNS servers, hostname, the active firewall (ufw / nftables /
+firewalld) with its defaults and rule count, and for physical NICs the driver,
+link speed/duplex (sysfs) and card model (lspci). A mirrored braille graph (rx up, tx down) of the last
 20 minutes for the default-route interface; enter graphs the selected
 interface instead, space adds or removes it as a side-by-side panel.
-Needs:    /proc/net/dev, ip (iproute2). No root.
-Execs:    ip -j addr, ip -j route, ip -d -j link. Reads /etc/resolv.conf.
+Needs:    /proc/net/dev, ip (iproute2). No root; firewall rules show ◐ without it.
+Execs:    ip -d -j addr, ip -j route, systemctl show (firewall units), ufw status
+          verbose or nft list ruleset when root, lspci -mm -nn once. Reads
+          /etc/resolv.conf and /sys/class/net/*.
 Interval: 2s.`
 }
 
@@ -287,6 +298,12 @@ func (m *Module) Collect(ctx context.Context) (module.Data, error) {
 	if b, err := m.run.ReadFile("/etc/resolv.conf"); err == nil {
 		d.DNS = ParseResolv(b)
 	}
+	d.Hostname = "example"
+	if !m.demo {
+		d.Hostname, _ = os.Hostname()
+	}
+	d.Firewall = m.firewall(ctx)
+	m.hardware(d.Ifaces)
 	if b, err := m.run.ReadFile("/proc/net/dev"); err == nil {
 		m.rates(ParseNetDev(b), &d)
 	}
@@ -430,6 +447,7 @@ func (*Module) Card(d module.Data, w int) string {
 	if len(nd.RxHist) > 1 {
 		lines = append(lines, ui.Mirror(nd.RxHist, nd.TxHist, max(10, min(40, w-4)), 1))
 	}
+	lines = append(lines, firewallStr(nd.Firewall, true))
 	return strings.Join(lines, "\n")
 }
 
@@ -461,7 +479,7 @@ func (m *Module) View(d module.Data, w, h int) string {
 		case in.Default:
 			name = s.Bold.Render(name)
 		}
-		rows = append(rows, []string{g + " " + name, s.Dim.Render(in.Kind), strings.Join(in.Addrs, " "), "↓" + rate(in.RxRate), "↑" + rate(in.TxRate)})
+		rows = append(rows, []string{g + " " + name, s.Dim.Render(in.Kind), in.Link, strings.Join(in.Addrs, " "), "↓" + rate(in.RxRate), "↑" + rate(in.TxRate)})
 		m.ui.names = append(m.ui.names, in.Name)
 	}
 	if m.ui.sel >= len(rows) {
@@ -479,7 +497,7 @@ func (m *Module) View(d module.Data, w, h int) string {
 		}
 		hi = min(len(rows), lo+listH-1)
 	}
-	table := ui.Table([]string{"  IFACE", "KIND", "ADDRESSES", "RX", "TX"}, rows[lo:hi], w-1)
+	table := ui.Table([]string{"  IFACE", "KIND", "LINK", "ADDRESSES", "RX", "TX"}, rows[lo:hi], w-1)
 	lines := strings.Split(table, "\n")
 	lines[0] = " " + lines[0]
 	for i := range lines[1:] {
@@ -489,12 +507,12 @@ func (m *Module) View(d module.Data, w, h int) string {
 			lines[i+1] = " " + lines[i+1]
 		}
 	}
-	out := []string{head, ""}
+	out := []string{kv("host", nd.Hostname) + "   " + firewallStr(nd.Firewall, false), head, ""}
 	out = append(out, lines...)
 	if hidden := len(rows) - (hi - lo); hidden > 0 {
 		out = append(out, s.Dim.Render(fmt.Sprintf("  … %d more", hidden)))
 	}
-	out = append(out, "", m.panels(charts, w-1, graphRows))
+	out = append(out, "", m.panels(charts, nd.Ifaces, w-1, graphRows))
 	res := strings.Join(out, "\n")
 	if h > 0 {
 		res = strings.Join(strings.Split(res, "\n")[:min(h, strings.Count(res, "\n")+1)], "\n")
@@ -503,7 +521,7 @@ func (m *Module) View(d module.Data, w, h int) string {
 }
 
 // panels lays one titled graph per charted iface side by side.
-func (m *Module) panels(charts []string, w, rows int) string {
+func (m *Module) panels(charts []string, ifaces []Iface, w, rows int) string {
 	s := theme.Current()
 	colW := max(10, w/max(1, len(charts)))
 	blocks := make([]string, 0, len(charts))
@@ -513,6 +531,9 @@ func (m *Module) panels(charts []string, w, rows int) string {
 			rx, tx = h[0], h[1]
 		}
 		title := s.Bold.Render(name) + "  " + s.OK.Render("▲ rx") + " " + s.Accent.Render("▼ tx") + "  " + s.Dim.Render(peakStr(rx, tx))
+		if hw := hwStr(ifaces, name); hw != "" {
+			title += "  " + s.Dim.Render(hw)
+		}
 		title = lipgloss.NewStyle().MaxWidth(colW - 1).Render(title) // truncate, never wrap into the graph
 		blocks = append(blocks, title+"\n"+ui.Mirror(rx, tx, colW-1, rows))
 	}
@@ -529,3 +550,51 @@ func peakStr(rx, tx []float64) string {
 }
 
 func kv(k, v string) string { return theme.Current().Dim.Render(k+" ") + v }
+
+// hwStr is "Broadcom NetXtreme II BCM5709 Gigabit Ethernet · bnx2 · 98:4b:…"
+// for a physical NIC, "" for a virtual one.
+func hwStr(ifaces []Iface, name string) string {
+	for _, in := range ifaces {
+		if in.Name != name || in.Driver == "" {
+			continue
+		}
+		parts := []string{}
+		for _, p := range []string{in.Model, in.Driver, in.MAC} {
+			if p != "" {
+				parts = append(parts, p)
+			}
+		}
+		return strings.Join(parts, " · ")
+	}
+	return ""
+}
+
+// firewallStr is "firewall ufw ● active · deny in, allow out · 10 rules",
+// "firewall ufw ● active · ◐ rules need root" unprivileged, or "firewall ○ none".
+// short drops "active" and the defaults so it fits a card line.
+func firewallStr(fw Firewall, short bool) string {
+	s := theme.Current()
+	if !fw.Active {
+		return kv("firewall", s.Dim.Render(s.Glyph.Fail+" none"))
+	}
+	parts := []string{fw.Backend + " " + s.OK.Render(s.Glyph.OK)}
+	if !short {
+		parts[0] += " active"
+	}
+	switch {
+	case fw.NeedsRoot:
+		parts = append(parts, s.Warn.Render(s.Glyph.Degraded+" rules need root"))
+	case fw.Backend == "nftables":
+		parts = append(parts, fmt.Sprintf("%d chains", fw.Rules))
+	case fw.Backend == "ufw":
+		if fw.Defaults != "" && !short {
+			parts = append(parts, fw.Defaults)
+		}
+		parts = append(parts, fmt.Sprintf("%d rules", fw.Rules))
+	}
+	sep := " · "
+	if short {
+		sep = " "
+	}
+	return kv("firewall", strings.Join(parts, sep))
+}

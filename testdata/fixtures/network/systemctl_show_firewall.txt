@@ -1,0 +1,11 @@
+Id=ufw.service
+ActiveState=active
+UnitFileState=enabled
+
+Id=nftables.service
+ActiveState=inactive
+UnitFileState=disabled
+
+Id=firewalld.service
+ActiveState=inactive
+UnitFileState=

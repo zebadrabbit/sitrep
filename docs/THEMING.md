@@ -60,3 +60,18 @@ them. `sitrep doctor` warns when the locale is not UTF-8 and suggests it.
   else uses that style (§10.6).
 - Adding a color means adding a key to `Theme`, a style to `Styles`, and a
   value in all four builtin files.
+
+## Colors look wrong over ssh?
+
+Hex themes need a truecolor terminal. ssh does not forward `COLORTERM`, so a
+terminal that speaks truecolor still shows up on the box as `xterm-256color`,
+and every hex color is snapped to the nearest of 256. Nord's green (`#A3BE8C`)
+lands on khaki, which is why its charts and bars look tan. Fix it on the box:
+
+```
+echo 'export COLORTERM=truecolor' >> ~/.bashrc
+```
+
+Or use the `terminal` theme, which uses your emulator's own palette by index
+and needs no truecolor at all.
+

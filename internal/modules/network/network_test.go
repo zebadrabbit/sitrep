@@ -81,7 +81,7 @@ func TestPanelKeys(t *testing.T) {
 		t.Fatalf("enter should replace, got %v", got)
 	}
 	m.hist["eth0"] = &[2][]float64{{1, 2, 3}, {3, 2, 1}}
-	out := m.panels([]string{"eth0", "wg0"}, 80, 2)
+	out := m.panels([]string{"eth0", "wg0"}, nil, 80, 2)
 	if !strings.Contains(out, "eth0") || !strings.Contains(out, "wg0") || strings.Count(out, "\n") != 4 {
 		t.Fatalf("two panels side by side, 5 lines: %q", out)
 	}
@@ -120,5 +120,72 @@ func TestNoIPFallback(t *testing.T) {
 	}
 	if v := m.View(d, 100, 0); !strings.Contains(v, "ip missing") {
 		t.Error("view should say ip is missing")
+	}
+}
+
+func TestParseFirewallUnits(t *testing.T) {
+	in := []byte("Id=ufw.service\nActiveState=active\nUnitFileState=enabled\n\nId=nftables.service\nActiveState=inactive\nUnitFileState=disabled\n\nId=firewalld.service\nActiveState=inactive\nUnitFileState=\n")
+	fw := ParseFirewallUnits(in)
+	if fw.Backend != "ufw" || !fw.Active || !fw.Enabled {
+		t.Errorf("got %+v", fw)
+	}
+	if fw := ParseFirewallUnits([]byte("Id=ufw.service\nActiveState=inactive\nUnitFileState=disabled\n")); fw.Backend != "" || fw.Active {
+		t.Errorf("nothing active: %+v", fw)
+	}
+}
+
+func TestParseUfwStatus(t *testing.T) {
+	in := []byte("Status: active\nLogging: on (low)\nDefault: deny (incoming), allow (outgoing), deny (routed)\nNew profiles: skip\n\nTo                         Action      From\n--                         ------      ----\n22/tcp                     ALLOW IN    Anywhere\n443/tcp (v6)               ALLOW IN    Anywhere (v6)              # Nginx HTTPS\n\n")
+	defaults, rules := ParseUfwStatus(in)
+	if defaults != "deny in, allow out" || rules != 2 {
+		t.Errorf("got %q %d", defaults, rules)
+	}
+}
+
+func TestParseNftRuleset(t *testing.T) {
+	in := []byte("table ip filter {\n\tchain input {\n\t\ttype filter hook input priority 0;\n\t\tiif lo accept\n\t\tct state established accept\n\t}\n\tchain forward {\n\t}\n}\ntable ip6 filter {\n\tchain input {\n\t}\n}\n")
+	if got := ParseNftRuleset(in); got != 3 {
+		t.Errorf("chains = %d want 3", got)
+	}
+}
+
+func TestParseLspci(t *testing.T) {
+	in := []byte(`03:00.0 "Ethernet controller [0200]" "Broadcom Inc. and subsidiaries [14e4]" "NetXtreme II BCM5709 Gigabit Ethernet [1639]" -r20 -p00 "Hewlett-Packard Company [103c]" "NC382i [7055]"
+09:00.0 "Ethernet controller [0200]" "Intel Corporation [8086]" "82571EB/82571GB Gigabit Ethernet Controller D0/D1 (copper applications) [105e]" -r06 -p00 "Intel Corporation [8086]" "PRO/1000 PT Dual Port Server Adapter [135e]"
+00:1f.2 "SATA controller [0106]" "Intel Corporation [8086]" "82801JI (ICH10 Family) SATA AHCI Controller [3a22]" -r00 -p01 "Hewlett-Packard Company [103c]" "Device [330b]"
+`)
+	m := ParseLspci(in)
+	if m["0000:03:00.0"] != "Broadcom NetXtreme II BCM5709 Gigabit Ethernet" || m["0000:09:00.0"] != "Intel 82571EB/82571GB Gigabit Ethernet Controller D0/D1 (copper applications)" {
+		t.Errorf("got %v", m)
+	}
+	if _, ok := m["0000:00:1f.2"]; ok {
+		t.Error("non-network devices should be skipped")
+	}
+}
+
+func TestLinkStr(t *testing.T) {
+	for _, c := range []struct{ speed, duplex, want string }{
+		{"1000\n", "full\n", "1G full"}, {"10000\n", "unknown\n", "10G"}, {"-1\n", "unknown\n", ""}, {"", "", ""}, {"2500", "full", "2.5G full"},
+	} {
+		if got := linkStr(c.speed, c.duplex); got != c.want {
+			t.Errorf("linkStr(%q,%q) = %q want %q", c.speed, c.duplex, got, c.want)
+		}
+	}
+}
+
+func TestDemoHasHostFirewallAndHardware(t *testing.T) {
+	m := New(true)
+	d, err := m.Collect(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	v := m.View(d, 100, 30)
+	for _, want := range []string{"example", "firewall", "LINK", "1G full"} {
+		if !strings.Contains(v, want) {
+			t.Errorf("view missing %q:\n%s", want, v)
+		}
+	}
+	if !strings.Contains(m.Card(d, 60), "firewall") {
+		t.Error("card missing firewall line")
 	}
 }

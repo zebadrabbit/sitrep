@@ -77,4 +77,9 @@ screen), and everything kernwatch does with eBPF, cgroups, and actions (§2).
   per-cpu % from gopsutil. The grid (`  0 ██░░░░░░░░ 16%` cells, wrapped to width, one block per
   node) is used when it fits the height the header and top-5 tables leave; otherwise one
   sparkline cell per cpu per node, so a quad-socket EPYC still fits on one screen.
+- **Hostname, firewall and NIC hardware on Network** (owner). Firewall = first active of
+  ufw / nftables / firewalld via `systemctl show` (unprivileged); rules via `ufw status verbose`
+  or `nft list ruleset` only when root, `◐ rules need root` otherwise, never an error. firewalld
+  rules are not read (nothing to capture from). NIC model from `lspci -mm -nn` once, matched by
+  PCI address; speed/duplex/driver from sysfs each tick; virtual ifaces stay blank.
 
