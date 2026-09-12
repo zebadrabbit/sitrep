@@ -22,8 +22,10 @@ import (
 	"github.com/zebadrabbit/sitrep/internal/config"
 	"github.com/zebadrabbit/sitrep/internal/detect"
 	"github.com/zebadrabbit/sitrep/internal/doctor"
+	"github.com/zebadrabbit/sitrep/internal/insight"
 	"github.com/zebadrabbit/sitrep/internal/module"
 	"github.com/zebadrabbit/sitrep/internal/modules"
+	"github.com/zebadrabbit/sitrep/internal/modules/overview"
 	"github.com/zebadrabbit/sitrep/internal/theme"
 	"github.com/zebadrabbit/sitrep/internal/version"
 )
@@ -72,7 +74,7 @@ func root() *cobra.Command {
 	r.PersistentFlags().BoolVar(&flags.json, "json", false, "machine-readable output")
 	r.PersistentFlags().BoolVar(&flags.demo, "demo", false, "run against bundled fixtures; no host access")
 
-	r.AddCommand(versionCmd(), doctorCmd(), configCmd(), themeCmd(), snapshotCmd(), modulesCmd())
+	r.AddCommand(versionCmd(), doctorCmd(), whyCmd(), configCmd(), themeCmd(), snapshotCmd(), modulesCmd())
 	return r
 }
 
@@ -163,27 +165,65 @@ func snapshotCmd() *cobra.Command {
 		Short: "Dump every enabled module's current data as JSON",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			entries, _ := resolve()
-			snap := map[string]any{}
-			for _, e := range module.OneShotOrder(entries) {
-				if !e.Enabled || e.Module.Interval() == 0 {
-					continue
-				}
-				ctx, cancel := context.WithTimeout(context.Background(), module.Timeout(e.Module))
-				d, err := e.Module.Collect(ctx)
-				cancel()
-				if err != nil {
-					snap[e.Module.ID()] = map[string]string{"error": err.Error()}
-					continue
-				}
-				snap[e.Module.ID()] = d
-			}
 			enc := json.NewEncoder(cmd.OutOrStdout())
 			enc.SetIndent("", "  ")
-			return enc.Encode(snap)
+			return enc.Encode(collectAll(entries))
 		},
 	}
 	c.Flags().StringVarP(&out, "output", "o", "json", "output format (json)")
 	return c
+}
+
+// collectAll collects every enabled module once, in dependency order. A
+// failed module becomes {"error": ...} so the rest still land.
+func collectAll(entries []module.Entry) map[string]any {
+	snap := map[string]any{}
+	for _, e := range module.OneShotOrder(entries) {
+		if !e.Enabled || e.Module.Interval() == 0 {
+			continue
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), module.Timeout(e.Module))
+		d, err := e.Module.Collect(ctx)
+		cancel()
+		if err != nil {
+			snap[e.Module.ID()] = map[string]string{"error": err.Error()}
+			continue
+		}
+		snap[e.Module.ID()] = d
+	}
+	return snap
+}
+
+// whyCmd is the Overview's findings as text for a ticket. Exit 1 when any
+// finding is crit, so `sitrep why || page-me` works.
+func whyCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "why",
+		Short: "Plain-English findings: what needs a human, and which tab to open",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			entries, _ := resolve()
+			found := insight.Check(collectAll(entries))
+			if flags.json {
+				enc := json.NewEncoder(cmd.OutOrStdout())
+				enc.SetIndent("", "  ")
+				return enc.Encode(found)
+			}
+			s := theme.Current()
+			if len(found) == 0 {
+				fmt.Fprintln(cmd.OutOrStdout(), s.OK.Render(s.Glyph.OK)+" nothing to report")
+				return nil
+			}
+			crit := false
+			for _, i := range found {
+				fmt.Fprintln(cmd.OutOrStdout(), overview.Line(i, 0))
+				crit = crit || i.Level == insight.Crit
+			}
+			if crit {
+				os.Exit(1)
+			}
+			return nil
+		},
+	}
 }
 
 func modulesCmd() *cobra.Command {

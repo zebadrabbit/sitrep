@@ -17,6 +17,7 @@ sitrep --demo           # bundled fixtures, no host access
 sitrep --once ports     # one frame to stdout, for scripts and screenshots
 
 sitrep doctor           # what works, what needs root, what is missing
+sitrep why              # plain-English findings and which tab to open; exit 1 on crit
 sitrep ports --json     # any module as a one-shot table or JSON
 sitrep snapshot         # every module as JSON
 sitrep modules list     # id, state, reason

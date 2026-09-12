@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -45,6 +46,7 @@ type Data struct {
 	Arch      string        `json:"arch"`
 	Uptime    time.Duration `json:"uptime"`
 	Load      [3]float64    `json:"load"`
+	CPUs      int           `json:"cpus"`
 	CPUPct    float64       `json:"cpu_pct"`
 	CPUHist   []float64     `json:"cpu_hist"`
 	MemUsed   uint64        `json:"mem_used"`
@@ -115,6 +117,7 @@ func collect(ctx context.Context) (Data, error) {
 	d.Hostname, d.Kernel, d.Arch = hi.Hostname, hi.KernelVersion, hi.KernelArch
 	d.Distro = strings.TrimSpace(hi.Platform + " " + hi.PlatformVersion)
 	d.Uptime = time.Duration(hi.Uptime) * time.Second
+	d.CPUs = runtime.NumCPU()
 	if l, err := load.AvgWithContext(ctx); err == nil {
 		d.Load = [3]float64{l.Load1, l.Load5, l.Load15}
 	}

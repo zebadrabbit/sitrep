@@ -40,3 +40,19 @@ One line each, with the reason. HANDOFF.md is the contract; this file records wh
 - **README screenshots without a browser** (2026-09-11): `make shots` renders `--once --demo` frames through `scripts/ansi2svg.py` (every word and braille dot absolutely positioned) and ImageMagick into `docs/img/*.png`. vhs captures nothing on pandalab and charm `freeze` segfaults rasterizing; ImageMagick's own SVG renderer is fine once nothing relies on whitespace or font fallback. `--once --keys j,enter` presses keys before rendering so a shot can show the detail pane; the network module synthesizes traffic in `--demo`, since the fixture has one counter sample.
 - **Release plumbing** (2026-09-11): `.github/workflows/ci.yml` runs lint, tests and a static build on push and PR; `release.yml` runs goreleaser on a `v*` tag, so a release is `git tag v1.0.0 && git push --tags`. `scripts/redact-fixtures.py` now scrubs MACs (`02:00:00:00:00:NN`) and its IPv6 regex accepts a single leading group, which is why EUI-64 link-locals had slipped through. No LICENSE file yet: that is the owner's choice and the one thing blocking a public release.
 
+
+## 2026-09-11 — Borrowed from syswatch
+
+Reviewed matthart1983/syswatch and kernwatch for ideas. What HANDOFF already
+took from syswatch (lite/dense sizes, mirrored network graph, the key set,
+honest needs-root) stays. Parked as v2: session recording and timeline
+scrubbing (§1 History), a settings key and command palette (no settings
+screen), and everything kernwatch does with eBPF, cgroups, and actions (§2).
+
+- **Insights + `sitrep why`** (syswatch's Insights tab and `why`). `internal/insight` is pure
+  functions over the Data types already collected: memory and swap, load per cpu, mounts past
+  the `ui.Bar` thresholds, SMART failed, failed units and timers, unhealthy containers, reboot
+  required, security updates, an hour of errors, unidentified listeners. Overview shows the top
+  three under the status line; `why` prints them all and exits 1 on crit. Not a module: it has
+  no collector, and a rule that needs new data belongs in the module that collects it. System
+  Data grew a `cpus` field for the load rule.

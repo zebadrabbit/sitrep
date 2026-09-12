@@ -10,6 +10,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/zebadrabbit/sitrep/internal/insight"
 	"github.com/zebadrabbit/sitrep/internal/module"
 	"github.com/zebadrabbit/sitrep/internal/modules/overview"
 	"github.com/zebadrabbit/sitrep/internal/modules/system"
@@ -358,6 +359,11 @@ func (m Model) overviewData() overview.Data {
 		}
 		d.Cards = append(d.Cards, overview.Card{Title: e.Module.Title(), Body: body})
 	}
+	data := make(map[string]any, len(m.store))
+	for id, sl := range m.store {
+		data[id] = sl.data
+	}
+	d.Insights = insight.Check(data)
 	return d
 }
 
