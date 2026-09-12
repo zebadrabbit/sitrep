@@ -51,19 +51,26 @@ type Data struct {
 	CPUs     int           `json:"cpus"`
 	// Pressure is PSI "some avg10" for cpu, memory, io: the share of the last
 	// 10s some task spent stalled on that resource. 0 when the kernel has no PSI.
-	Pressure  [3]float64 `json:"pressure"`
-	CPUPct    float64    `json:"cpu_pct"`
-	PerCPU    []float64  `json:"per_cpu"`
-	Topo      Topology   `json:"topology"`
-	CPUHist   []float64  `json:"cpu_hist"`
-	MemUsed   uint64     `json:"mem_used"`
-	MemTotal  uint64     `json:"mem_total"`
-	SwapUsed  uint64     `json:"swap_used"`
-	SwapTotal uint64     `json:"swap_total"`
-	Temps     []Sensor   `json:"temps,omitempty"`
-	Fans      []Sensor   `json:"fans,omitempty"`
-	TopCPU    []Proc     `json:"top_cpu"`
-	TopRSS    []Proc     `json:"top_rss"`
+	Pressure [3]float64 `json:"pressure"`
+	CPUPct   float64    `json:"cpu_pct"`
+	PerCPU   []float64  `json:"per_cpu"`
+	Topo     Topology   `json:"topology"`
+	CPUHist  []float64  `json:"cpu_hist"`
+	MemUsed  uint64     `json:"mem_used"`
+	MemTotal uint64     `json:"mem_total"`
+	// The three numbers that answer "is this box short on memory": what the
+	// kernel would hand out without swapping, what it could drop, what it
+	// still has to write back.
+	MemAvail   uint64   `json:"mem_avail"`
+	MemCached  uint64   `json:"mem_cached"`
+	MemBuffers uint64   `json:"mem_buffers"`
+	MemDirty   uint64   `json:"mem_dirty"`
+	SwapUsed   uint64   `json:"swap_used"`
+	SwapTotal  uint64   `json:"swap_total"`
+	Temps      []Sensor `json:"temps,omitempty"`
+	Fans       []Sensor `json:"fans,omitempty"`
+	TopCPU     []Proc   `json:"top_cpu"`
+	TopRSS     []Proc   `json:"top_rss"`
 }
 
 type Module struct {
@@ -85,7 +92,8 @@ func (*Module) Keys() []key.Binding     { return nil }
 func (*Module) Info() string {
 	return `Collects: distro, kernel, arch, uptime, load 1/5/15, CPU% (60-sample ring for the
 sparkline), per-cpu utilisation, CPU model and socket/core/thread topology, NUMA
-nodes with their cpus and memory, memory and swap, PSI pressure (some avg10 for
+nodes with their cpus and memory, memory and swap (with available, cached,
+buffers, dirty), PSI pressure (some avg10 for
 cpu, memory, io), temperatures and fans from /sys/class/hwmon (warn at the
 driver's max, crit at its crit, 80/95 °C when it has none), top 5 processes by
 CPU and by RSS.
@@ -144,6 +152,7 @@ func gather(ctx context.Context) (Data, error) {
 	d.PerCPU = perCPU(ctx)
 	if v, err := mem.VirtualMemoryWithContext(ctx); err == nil {
 		d.MemUsed, d.MemTotal = v.Used, v.Total
+		d.MemAvail, d.MemCached, d.MemBuffers, d.MemDirty = v.Available, v.Cached, v.Buffers, v.Dirty
 	}
 	if s, err := mem.SwapMemoryWithContext(ctx); err == nil {
 		d.SwapUsed, d.SwapTotal = s.Used, s.Total
@@ -277,6 +286,7 @@ func (*Module) View(d module.Data, w, h int) string {
 		fmt.Sprintf("%s  %s %3.0f%%", s.Dim.Render("cpu "), ui.Sparkline(sd.CPUHist, barW, 100), sd.CPUPct),
 		fmt.Sprintf("%s  %s %3.0f%%  %s / %s", s.Dim.Render("mem "), ui.Bar(pct(sd.MemUsed, sd.MemTotal), barW), pct(sd.MemUsed, sd.MemTotal), ui.Bytes(sd.MemUsed), ui.Bytes(sd.MemTotal)),
 		fmt.Sprintf("%s  %s %3.0f%%  %s / %s", s.Dim.Render("swap"), ui.Bar(pct(sd.SwapUsed, sd.SwapTotal), barW), pct(sd.SwapUsed, sd.SwapTotal), ui.Bytes(sd.SwapUsed), ui.Bytes(sd.SwapTotal)),
+		"      " + s.Dim.Render(fmt.Sprintf("avail %s · cached %s · buffers %s · dirty %s", ui.Bytes(sd.MemAvail), ui.Bytes(sd.MemCached), ui.Bytes(sd.MemBuffers), ui.Bytes(sd.MemDirty))),
 		pressureLine(sd) + "  " + s.Dim.Render("stall share, last 10s"),
 	}
 	lines = append(lines, sensorLines(sd)...)

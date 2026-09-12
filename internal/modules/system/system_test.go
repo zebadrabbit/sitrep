@@ -25,7 +25,7 @@ func TestDemoFixtureRenders(t *testing.T) {
 	if card := m.Card(d, 60); strings.Count(card, "\n") > 5 {
 		t.Errorf("card exceeds 6 lines:\n%s", card)
 	}
-	if v := m.View(d, 100, 28); !strings.Contains(v, "top by cpu") || !strings.Contains(v, "node0") {
+	if v := m.View(d, 100, 28); !strings.Contains(v, "top by cpu") || !strings.Contains(v, "node0") || !strings.Contains(v, "avail") {
 		t.Errorf("view missing sections")
 	}
 	if _, err := json.Marshal(d); err != nil {

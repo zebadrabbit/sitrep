@@ -3,19 +3,19 @@
   "distro": "ubuntu 24.04",
   "kernel": "6.8.0-139-generic",
   "arch": "x86_64",
-  "uptime": 12597000000000,
+  "uptime": 13094000000000,
   "load": [
-    0.91,
-    0.9,
-    1.16
+    1.02,
+    1.27,
+    1.28
   ],
   "cpus": 8,
   "pressure": [
-    0.64,
+    1.61,
     0,
     0
   ],
-  "cpu_pct": 19.999999994179234,
+  "cpu_pct": 40.000000005820766,
   "per_cpu": [
     33.2,
     0.5,
@@ -44,7 +44,7 @@
           6
         ],
         "mem_total": 37970661376,
-        "mem_used": 5793030144
+        "mem_used": 5866557440
       },
       {
         "id": 1,
@@ -56,15 +56,19 @@
           7
         ],
         "mem_total": 38002524160,
-        "mem_used": 5029298176
+        "mem_used": 5103448064
       }
     ]
   },
   "cpu_hist": [
-    19.999999994179234
+    40.000000005820766
   ],
-  "mem_used": 6218498048,
+  "mem_used": 6283243520,
   "mem_total": 75973185536,
+  "mem_avail": 69689942016,
+  "mem_cached": 4802256896,
+  "mem_buffers": 806129664,
+  "mem_dirty": 24252416,
   "swap_used": 0,
   "swap_total": 8589930496,
   "temps": [
@@ -75,122 +79,122 @@
     {
       "chip": "coretemp",
       "label": "Core 0",
-      "value": 44,
-      "max": 87,
-      "crit": 97
-    },
-    {
-      "chip": "coretemp",
-      "label": "Core 1",
-      "value": 44,
-      "max": 87,
-      "crit": 97
-    },
-    {
-      "chip": "coretemp",
-      "label": "Core 2",
       "value": 45,
       "max": 87,
       "crit": 97
     },
     {
       "chip": "coretemp",
+      "label": "Core 1",
+      "value": 46,
+      "max": 87,
+      "crit": 97
+    },
+    {
+      "chip": "coretemp",
+      "label": "Core 2",
+      "value": 46,
+      "max": 87,
+      "crit": 97
+    },
+    {
+      "chip": "coretemp",
       "label": "Core 3",
-      "value": 44,
+      "value": 45,
       "max": 87,
       "crit": 97
     },
     {
       "chip": "coretemp",
       "label": "Core 0",
-      "value": 45,
+      "value": 44,
       "max": 87,
       "crit": 97
     },
     {
       "chip": "coretemp",
       "label": "Core 1",
-      "value": 43,
+      "value": 44,
       "max": 87,
       "crit": 97
     },
     {
       "chip": "coretemp",
       "label": "Core 2",
-      "value": 43,
+      "value": 44,
       "max": 87,
       "crit": 97
     },
     {
       "chip": "coretemp",
       "label": "Core 3",
-      "value": 43,
+      "value": 44,
       "max": 87,
       "crit": 97
     }
   ],
   "top_cpu": [
     {
-      "pid": 790678,
+      "pid": 826267,
       "name": "sitrep",
-      "cpu": 32.164159267484834,
-      "rss": 17092608
+      "cpu": 30.294743347691757,
+      "rss": 17186816
     },
     {
       "pid": 570597,
       "name": "claude",
-      "cpu": 7.951167510523571,
-      "rss": 423075840
-    },
-    {
-      "pid": 663477,
-      "name": "claude",
-      "cpu": 2.4280098288225136,
-      "rss": 350732288
+      "cpu": 8.27901332168724,
+      "rss": 427872256
     },
     {
       "pid": 1661,
       "name": "dockerd",
-      "cpu": 2.4077583888418146,
-      "rss": 134823936
+      "cpu": 2.4030311962344264,
+      "rss": 131305472
+    },
+    {
+      "pid": 663477,
+      "name": "claude",
+      "cpu": 2.2227276322844762,
+      "rss": 350232576
     },
     {
       "pid": 1526,
       "name": "containerd",
-      "cpu": 1.8453267980639554,
-      "rss": 62296064
+      "cpu": 1.8458818828841792,
+      "rss": 62361600
     }
   ],
   "top_rss": [
     {
       "pid": 6969,
       "name": "python3",
-      "cpu": 0.536512358767572,
-      "rss": 429215744
+      "cpu": 0.5271163062319318,
+      "rss": 429449216
     },
     {
       "pid": 570597,
       "name": "claude",
-      "cpu": 7.951167510523571,
-      "rss": 423075840
+      "cpu": 8.27901332168724,
+      "rss": 427872256
     },
     {
       "pid": 663477,
       "name": "claude",
-      "cpu": 2.4280098288225136,
-      "rss": 350732288
+      "cpu": 2.2227276322844762,
+      "rss": 350232576
     },
     {
       "pid": 3151,
       "name": "fastapi",
-      "cpu": 0.33160805387541176,
-      "rss": 291287040
+      "cpu": 0.3282291361924717,
+      "rss": 291295232
     },
     {
       "pid": 2980,
       "name": "python",
-      "cpu": 0.15130578504399514,
-      "rss": 280158208
+      "cpu": 0.14743099137458116,
+      "rss": 280186880
     }
   ]
 }
