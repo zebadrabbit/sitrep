@@ -127,8 +127,12 @@ func colorCheck() Check {
 	}
 	p := colorprofile.Detect(os.Stdout, os.Environ())
 	switch p {
-	case colorprofile.TrueColor, colorprofile.ANSI256:
+	case colorprofile.TrueColor:
 		return Check{OK, "color", p.String()}
+	case colorprofile.ANSI256:
+		// ssh drops COLORTERM, so a truecolor emulator lands here and every
+		// hex theme is snapped to the 256 cube (nord's green turns khaki).
+		return Check{Degraded, "color", "256 colors; hex themes are quantized — export COLORTERM=truecolor if your emulator supports it, or use theme \"terminal\""}
 	case colorprofile.ANSI:
 		return Check{OK, "color", "16 colors; theme will be downsampled"}
 	}
