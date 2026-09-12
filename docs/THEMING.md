@@ -5,7 +5,7 @@ Pick one with `sitrep theme set <name>` or `theme = "<name>"` in `config.toml`.
 `sitrep theme list` shows what is available.
 
 ```
-sitrep theme list        # amber mono nord terminal + anything in ~/.config/sitrep/themes/
+sitrep theme list        # amber bbs mono nord terminal + anything in ~/.config/sitrep/themes/
 sitrep theme set nord
 ```
 

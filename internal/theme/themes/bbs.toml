@@ -1,0 +1,11 @@
+# BBS: the 16-color ANSI art palette. Magenta accent, bright green status,
+# CGA dark gray for dim. Looks best on pure black.
+name   = "bbs"
+accent = "#FF55FF"
+ok     = "#55FF55"
+warn   = "#FFFF55"
+crit   = "#FF5555"
+dim    = "#555555"
+port   = "#55FFFF"
+selection = "#2A002A" # cursor-row background, the one background sitrep paints
+ascii  = false
