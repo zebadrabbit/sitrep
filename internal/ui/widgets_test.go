@@ -24,8 +24,12 @@ func TestAge(t *testing.T) {
 
 func TestSparklineWidth(t *testing.T) {
 	s := Sparkline([]float64{0, 50, 100}, 5, 100)
-	if r := []rune(s); len(r) != 5 || r[4] != '█' || r[2] != '▁' {
+	if r := []rune(stripAnsi(s)); len(r) != 5 || r[4] != '█' || r[2] != '▁' {
 		t.Errorf("got %q", s)
+	}
+	th := theme.Current()
+	if !strings.Contains(s, th.Crit.Render("█")) || !strings.Contains(s, th.OK.Render("▁▄")) {
+		t.Errorf("cells not colored by height: %q", s)
 	}
 }
 

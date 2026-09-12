@@ -3,6 +3,8 @@ package ui
 import (
 	"strings"
 	"testing"
+
+	"github.com/zebadrabbit/sitrep/internal/theme"
 )
 
 func TestMirrorShape(t *testing.T) {
@@ -20,6 +22,11 @@ func TestMirrorShape(t *testing.T) {
 	}
 	if Mirror(nil, nil, 0, 2) != "" {
 		t.Error("zero width should be empty")
+	}
+	// Columns under a quarter of peak are dim; the tall right edge is not.
+	th := theme.Current()
+	if top := lines[0]; !strings.HasPrefix(top, th.Dim.Render("")[:2]) || !strings.Contains(top, th.OK.Render("")[:2]) {
+		t.Errorf("magnitude coloring missing: %q", top)
 	}
 }
 

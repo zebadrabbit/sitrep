@@ -3,6 +3,8 @@ package ui
 import (
 	"strings"
 
+	"charm.land/lipgloss/v2"
+
 	"github.com/zebadrabbit/sitrep/internal/theme"
 )
 
@@ -41,15 +43,55 @@ func Mirror(rx, tx []float64, w, rows int) string {
 	down := half(tx, w, rows, peak, true)
 	var b strings.Builder
 	for i := len(up) - 1; i >= 0; i-- {
-		b.WriteString(s.OK.Render(up[i]) + "\n")
+		b.WriteString(paint(up[i], loud(rx, w, peak), s.OK, s.Dim) + "\n")
 	}
 	for i := range down {
-		b.WriteString(s.Accent.Render(down[i]))
+		b.WriteString(paint(down[i], loud(tx, w, peak), s.Accent, s.Dim))
 		if i < len(down)-1 {
 			b.WriteString("\n")
 		}
 	}
 	return b.String()
+}
+
+// quiet is the share of peak under which a column is drawn dim: throughput
+// is not an error state, so the ramp is cool → bright, not green → red.
+const quiet = 0.25
+
+// loud marks the columns whose taller sample reaches quiet × peak.
+func loud(v []float64, w int, peak float64) []bool {
+	out := make([]bool, w)
+	for i := range out {
+		for side := 0; side < 2; side++ {
+			if idx := i*2 + side; idx < len(v) && v[idx] >= quiet*peak {
+				out[i] = true
+			}
+		}
+	}
+	return out
+}
+
+// paint styles one braille row per column, in runs so the ANSI stays short.
+func paint(line string, bright []bool, hi, lo lipgloss.Style) string {
+	var b, run strings.Builder
+	cur := false
+	for i, r := range []rune(line) {
+		if bright[i] != cur && run.Len() > 0 {
+			b.WriteString(pick(cur, hi, lo).Render(run.String()))
+			run.Reset()
+		}
+		cur = bright[i]
+		run.WriteRune(r)
+	}
+	b.WriteString(pick(cur, hi, lo).Render(run.String()))
+	return b.String()
+}
+
+func pick(bright bool, hi, lo lipgloss.Style) lipgloss.Style {
+	if bright {
+		return hi
+	}
+	return lo
 }
 
 func tail(v []float64, n int) []float64 {

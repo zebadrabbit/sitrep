@@ -12,31 +12,47 @@ import (
 
 var sparkRunes = []rune("▁▂▃▄▅▆▇█")
 
-// Sparkline renders the last w values scaled to 0..max (max ≥ 1).
-func Sparkline(vals []float64, w int, max float64) string {
+// Sparkline renders the last w values scaled to 0..max (max ≥ 1). Each cell
+// is colored by its own height with the Bar thresholds (warn ≥ 85%, crit
+// ≥ 95%), so a spike reads before the number next to it does.
+func Sparkline(vals []float64, w int, scale float64) string {
 	if w <= 0 {
 		return ""
 	}
 	if len(vals) > w {
 		vals = vals[len(vals)-w:]
 	}
-	if max <= 0 {
-		max = 1
+	if scale <= 0 {
+		scale = 1
 	}
+	s := theme.Current()
 	var b strings.Builder
-	for i := 0; i < w-len(vals); i++ {
-		b.WriteRune(' ')
+	b.WriteString(strings.Repeat(" ", w-len(vals)))
+	var run strings.Builder
+	var cur lipgloss.Style
+	flush := func() {
+		if run.Len() > 0 {
+			b.WriteString(cur.Render(run.String()))
+			run.Reset()
+		}
 	}
 	for _, v := range vals {
-		i := int(v / max * float64(len(sparkRunes)-1))
-		if i < 0 {
-			i = 0
+		pct := v / scale * 100
+		style := s.OK
+		switch {
+		case pct >= 95:
+			style = s.Crit
+		case pct >= 85:
+			style = s.Warn
 		}
-		if i >= len(sparkRunes) {
-			i = len(sparkRunes) - 1
+		if style.GetForeground() != cur.GetForeground() || style.GetBold() != cur.GetBold() {
+			flush()
+			cur = style
 		}
-		b.WriteRune(sparkRunes[i])
+		i := int(pct / 100 * float64(len(sparkRunes)-1))
+		run.WriteRune(sparkRunes[max(0, min(i, len(sparkRunes)-1))])
 	}
+	flush()
 	return b.String()
 }
 

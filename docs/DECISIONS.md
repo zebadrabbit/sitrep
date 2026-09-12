@@ -61,3 +61,14 @@ screen), and everything kernwatch does with eBPF, cgroups, and actions (§2).
   their state, unit states, sessions, mounts and usage past 5 points, kernel, reboot, pending
   updates. Still no history (§1): the file is the user's, written by `snapshot`, kept wherever
   they like. Exit 0 always; `why` is the health check.
+- **PSI on System** (syswatch's pressure vitals): `/proc/pressure/{cpu,memory,io}` some avg10,
+  a fourth card line. Stalls, not utilisation, so warn at 25 and crit at 50, and an insight
+  rule for memory pressure.
+- **`f` freezes the screen** (syswatch's pause, kernwatch's freeze). Results are dropped and
+  tickers stop while frozen; `f` again restarts every collector. `p` was taken by the probe.
+- **`terminal` theme** (syswatch): ANSI indexes instead of hex, so the palette is the
+  emulator's. `lipgloss.Color` already parses them; no loader change. No selection background,
+  index 0 is unreadable on a light scheme.
+- **Cells colored by their own height** (syswatch). The CPU sparkline uses the Bar thresholds
+  per cell (ok, warn ≥ 85, crit ≥ 95); the mirrored network graph dims columns under a quarter
+  of peak and keeps the direction color above, because throughput is not an error state.
