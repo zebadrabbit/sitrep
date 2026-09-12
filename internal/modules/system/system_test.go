@@ -3,6 +3,8 @@ package system
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -110,5 +112,45 @@ func TestCPUBlockLayouts(t *testing.T) {
 	flat := cpuBlock(Data{CPUs: 4, PerCPU: make([]float64, 4)}, 100, 10)
 	if strings.Contains(flat, "node") || !strings.Contains(flat, "░") {
 		t.Errorf("flat:\n%s", flat)
+	}
+}
+
+func TestReadSensors(t *testing.T) {
+	root := t.TempDir()
+	w := func(p, v string) {
+		p = filepath.Join(root, p)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(v+"\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	w("hwmon10/name", "coretemp") // sorts after hwmon2 numerically, not lexically
+	w("hwmon10/temp2_input", "44000")
+	w("hwmon10/temp2_label", "Core 0")
+	w("hwmon10/temp2_max", "87000")
+	w("hwmon10/temp2_crit", "97000")
+	w("hwmon10/temp10_input", "50000")
+	w("hwmon2/name", "acpitz")
+	w("hwmon2/temp1_input", "8300")
+	w("hwmon2/fan1_input", "1200")
+	w("hwmon2/fan2_input", "0")     // stopped or absent header: dropped
+	w("hwmon3/temp1_input", "1000") // no name: skipped
+	temps, fans := readSensors(root)
+	if len(temps) != 3 || temps[0].Chip != "acpitz" || temps[0].Value != 8.3 {
+		t.Fatalf("temps %+v", temps)
+	}
+	if temps[1].Label != "Core 0" || temps[1].Max != 87 || temps[1].Crit != 97 || temps[2].Value != 50 {
+		t.Errorf("coretemp %+v", temps[1:])
+	}
+	if temps[0].Warn() != 80 || temps[0].CritAt() != 95 || temps[1].Warn() != 87 {
+		t.Error("threshold fallbacks")
+	}
+	if len(fans) != 1 || fans[0].Value != 1200 {
+		t.Errorf("fans %+v", fans)
+	}
+	if temps, fans := readSensors(filepath.Join(root, "nope")); temps != nil || fans != nil {
+		t.Error("missing tree should be empty")
 	}
 }

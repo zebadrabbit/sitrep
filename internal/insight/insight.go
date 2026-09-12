@@ -76,6 +76,14 @@ func Check(data map[string]any) []Insight {
 		if d.CPUs > 0 && d.Load[0] > loadPerCPU*float64(d.CPUs) {
 			add(Warn, "System", "load %.1f on %d cpus", d.Load[0], d.CPUs)
 		}
+		if hot := hottest(d.Temps); hot != nil {
+			switch {
+			case hot.Value >= hot.CritAt():
+				add(Crit, "System", "%s at %.0f°C (crit %.0f)", sensorName(*hot), hot.Value, hot.CritAt())
+			case hot.Value >= hot.Warn():
+				add(Warn, "System", "%s at %.0f°C (max %.0f)", sensorName(*hot), hot.Value, hot.Warn())
+			}
+		}
 	}
 	if d, ok := data["disks"].(disks.Data); ok {
 		for _, m := range d.Mounts {
@@ -167,4 +175,23 @@ func join(names []string) string {
 		return strings.Join(names[:3], ", ") + fmt.Sprintf(" +%d", len(names)-3)
 	}
 	return strings.Join(names, ", ")
+}
+
+// hottest is the temperature furthest past its own warn threshold, so a
+// chip with a low max wins over a hotter one that is fine.
+func hottest(temps []system.Sensor) *system.Sensor {
+	var hot *system.Sensor
+	for i := range temps {
+		if hot == nil || temps[i].Value-temps[i].Warn() > hot.Value-hot.Warn() {
+			hot = &temps[i]
+		}
+	}
+	return hot
+}
+
+func sensorName(s system.Sensor) string {
+	if s.Label != "" {
+		return s.Chip + " " + s.Label
+	}
+	return s.Chip
 }

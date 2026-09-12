@@ -60,6 +60,8 @@ type Data struct {
 	MemTotal  uint64     `json:"mem_total"`
 	SwapUsed  uint64     `json:"swap_used"`
 	SwapTotal uint64     `json:"swap_total"`
+	Temps     []Sensor   `json:"temps,omitempty"`
+	Fans      []Sensor   `json:"fans,omitempty"`
 	TopCPU    []Proc     `json:"top_cpu"`
 	TopRSS    []Proc     `json:"top_rss"`
 }
@@ -84,7 +86,9 @@ func (*Module) Info() string {
 	return `Collects: distro, kernel, arch, uptime, load 1/5/15, CPU% (60-sample ring for the
 sparkline), per-cpu utilisation, CPU model and socket/core/thread topology, NUMA
 nodes with their cpus and memory, memory and swap, PSI pressure (some avg10 for
-cpu, memory, io), top 5 processes by CPU and by RSS.
+cpu, memory, io), temperatures and fans from /sys/class/hwmon (warn at the
+driver's max, crit at its crit, 80/95 °C when it has none), top 5 processes by
+CPU and by RSS.
 Needs:    /proc. No root needed. Without lscpu the topology lines are omitted.
 Execs:    lscpu -J, once; everything else is gopsutil and sysfs reads.
 Interval: 2s.`
@@ -145,6 +149,7 @@ func gather(ctx context.Context) (Data, error) {
 		d.SwapUsed, d.SwapTotal = s.Used, s.Total
 	}
 	d.TopCPU, d.TopRSS = topProcs(ctx)
+	d.Temps, d.Fans = readSensors("/sys/class/hwmon")
 	for i, res := range []string{"cpu", "memory", "io"} {
 		b, _ := os.ReadFile("/proc/pressure/" + res)
 		d.Pressure[i] = ParsePressure(b)
@@ -273,8 +278,9 @@ func (*Module) View(d module.Data, w, h int) string {
 		fmt.Sprintf("%s  %s %3.0f%%  %s / %s", s.Dim.Render("mem "), ui.Bar(pct(sd.MemUsed, sd.MemTotal), barW), pct(sd.MemUsed, sd.MemTotal), ui.Bytes(sd.MemUsed), ui.Bytes(sd.MemTotal)),
 		fmt.Sprintf("%s  %s %3.0f%%  %s / %s", s.Dim.Render("swap"), ui.Bar(pct(sd.SwapUsed, sd.SwapTotal), barW), pct(sd.SwapUsed, sd.SwapTotal), ui.Bytes(sd.SwapUsed), ui.Bytes(sd.SwapTotal)),
 		pressureLine(sd) + "  " + s.Dim.Render("stall share, last 10s"),
-		"",
 	}
+	lines = append(lines, sensorLines(sd)...)
+	lines = append(lines, "")
 	cpuRows := make([][]string, 0, 5)
 	for _, p := range sd.TopCPU {
 		cpuRows = append(cpuRows, []string{fmt.Sprintf("%d", p.PID), p.Name, fmt.Sprintf("%.1f%%", p.CPU)})
@@ -291,4 +297,59 @@ func (*Module) View(d module.Data, w, h int) string {
 	// Whatever height the header and tables leave is the per-cpu block's.
 	budget := h - len(lines) - strings.Count(tables, "\n") - 2
 	return strings.Join(append(lines, cpuBlock(sd, w, budget), "", tables), "\n")
+}
+
+// sensorLines is "temp  coretemp 44 42 45 44 · 44 41 42 42 °C   acpitz 8 °C"
+// and a matching "fan" line in rpm; nothing when the box has no hwmon.
+// Values are grouped per chip in hwmon order, a "·" between chips of the
+// same name (one coretemp per socket), each colored by its own thresholds.
+func sensorLines(sd Data) []string {
+	s := theme.Current()
+	var out []string
+	if len(sd.Temps) > 0 {
+		out = append(out, s.Dim.Render("temp")+"  "+groupSensors(sd.Temps, func(t Sensor) string {
+			txt := fmt.Sprintf("%.0f", t.Value)
+			switch {
+			case t.Value >= t.CritAt():
+				return s.Crit.Render(txt)
+			case t.Value >= t.Warn():
+				return s.Warn.Render(txt)
+			}
+			return txt
+		}, "°C"))
+	}
+	if len(sd.Fans) > 0 {
+		out = append(out, s.Dim.Render("fan ")+"  "+groupSensors(sd.Fans, func(f Sensor) string { return fmt.Sprintf("%.0f", f.Value) }, "rpm"))
+	}
+	return out
+}
+
+func groupSensors(all []Sensor, cell func(Sensor) string, unit string) string {
+	s := theme.Current()
+	var chips []string
+	var cur []string
+	prev := ""
+	flush := func() {
+		if len(cur) > 0 {
+			chips = append(chips, s.Dim.Render(prev)+" "+strings.Join(cur, " ")+" "+s.Dim.Render(unit))
+		}
+	}
+	for i, x := range all {
+		if i > 0 && x.Chip != prev {
+			flush()
+			cur = nil
+		} else if i > 0 && x.Chip == prev && len(cur) > 0 && isChipBoundary(all, i) {
+			cur = append(cur, s.Dim.Render("·"))
+		}
+		prev = x.Chip
+		cur = append(cur, cell(x))
+	}
+	flush()
+	return strings.Join(chips, "   ")
+}
+
+// isChipBoundary: the same chip name continuing with a lower label than the
+// previous input means a second chip instance started (Core 3 → Core 0).
+func isChipBoundary(all []Sensor, i int) bool {
+	return all[i].Label != "" && all[i].Label <= all[i-1].Label && all[i].Chip == all[i-1].Chip
 }
