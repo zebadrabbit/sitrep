@@ -2,7 +2,7 @@
 """Redact captured fixtures in place (HANDOFF §9).
 
 LAN 192.168.1.x → 10.0.0.x, VPN 10.8.0.x → 10.0.1.x, public IPv4 → 203.0.113.N,
-global IPv6 → 2001:db8::N, link-local → fe80::N, MAC → 02:00:00:00:00:NN,
+global IPv6 → 2001:db8::N, link-local → fe80::N, MAC → OUI kept, device half zeroed,
 hostname → example, user → user.
 Docker bridge 172.17-24 stays: it is a default, not a secret.
 Run after: SITREP_CAPTURE_FIXTURES=1 sitrep snapshot
@@ -31,9 +31,16 @@ def ip6(m):
     return s
 
 def mac(m):
+    """Zero the device half, keep the OUI.
+
+    The last three octets are what identifies one box; the first three are a
+    public IEEE registry entry. Keeping them lets the lan module's vendor
+    lookup and its locally-administered-bit check still mean something in
+    --demo, which is also how that parser gets exercised.
+    """
     s = m.group(0).lower()
     if s == "00:00:00:00:00:00": return m.group(0)
-    return macs.setdefault(s, f"02:00:00:00:00:{len(macs)+1:02x}")
+    return macs.setdefault(s, f"{s[:8]}:00:00:{len(macs)+1:02x}")
 
 R4 = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 # {1,7}: "fe80::x" has a single hex group before the "::"; {2,} let EUI-64 link-locals through.

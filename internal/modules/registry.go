@@ -7,6 +7,7 @@ import (
 	"github.com/zebadrabbit/sitrep/internal/modules/cron"
 	"github.com/zebadrabbit/sitrep/internal/modules/disks"
 	"github.com/zebadrabbit/sitrep/internal/modules/docker"
+	"github.com/zebadrabbit/sitrep/internal/modules/lan"
 	"github.com/zebadrabbit/sitrep/internal/modules/logs"
 	"github.com/zebadrabbit/sitrep/internal/modules/network"
 	"github.com/zebadrabbit/sitrep/internal/modules/nfs"
@@ -42,6 +43,7 @@ func Register(demo bool) {
 	module.Register(cron.New(demo))
 	module.Register(disks.New(demo))
 	module.Register(network.New(demo))
+	module.Register(lan.New(demo))
 	module.Register(d)
 	module.Register(samba.New(demo))
 	module.Register(nfs.New(demo))

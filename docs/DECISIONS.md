@@ -103,3 +103,43 @@ screen), and everything kernwatch does with eBPF, cgroups, and actions (§2).
 - **Memory breakdown on System**: available, cached, buffers, dirty as one dim line under swap.
   The bar stays used/total; available is the number that answers "short on memory?".
 
+
+## 2026-09-12 — LAN module
+
+- **`lan` module: neighbors, not a scanner** (owner asked for topology with nmap data,
+  2026-09-12). nmap was declined: `-sn -PR` against a /24 is outbound traffic to hosts we
+  do not own, on a timer, which contradicts §10.3 and the §6 promise that the localhost
+  probe is the only packet sitrep sends. Almost all of the asked-for table comes out of the
+  kernel for free — `ip -j neigh` for the hosts, the embedded IEEE OUI table for the vendor,
+  the locally-administered bit for randomized MACs, `ss` for who is talking to whom — so the
+  module reads those instead. A device that has never spoken to this box does not appear;
+  that is the honest cost of not scanning, and `modules info lan` says so.
+- **Direction comes from the listener set, not the port number.** The first cut called a
+  local port below the ephemeral range inbound. NFS breaks that: a client mounts from a
+  reserved source port, so every `→ .119:111` showed as `← 919`. `ss -tulnH` (no `-p`, so no
+  root) gives the listening ports and the answer is then exact, not a guess. When that call
+  fails TALKS stays empty rather than pointing every arrow the same way.
+- **Distinct IPv4 addresses on one MAC stay separate rows.** Folding by MAC is right for a
+  device answering on IPv4 plus its EUI-64 link-local, or seen from two NICs on one segment.
+  It is wrong for a proxy-ARP router or a bridge: three set-top boxes behind one MAC folded
+  into one line and hid two of them. They are marked `shared_mac` instead.
+- **Container MACs are excluded from the randomized count.** Every veth gets a
+  locally-administered MAC, so counting them makes the number that should mean "phone
+  rotating its MAC" read 6 when it means 4. Virtual interfaces are labelled `(virtual)` and
+  their subnets sort below the physical ones.
+- **Embedded OUI table, 10.5k entries, generated.** `scripts/gen-oui.py` filters the IEEE
+  MA-L registry to an allowlist of vendors that turn up on a home or lab LAN. Reading
+  `/usr/share/ieee-data/oui.csv` at runtime was rejected: it is Debian-only and 3MB for a
+  long tail of industrial gear. MA-L only, so a 28- or 36-bit block shows its raw prefix;
+  `lan.toml` covers that case.
+- **Fixture redaction now keeps the OUI** and zeroes only the last three octets. The device
+  half is the identifier; the vendor half is a public registry entry, and keeping it is what
+  makes the vendor lookup and the randomized-MAC check mean anything in `--demo`.
+
+## v2 (added 2026-09-12)
+
+- **Active discovery** (`nmap -sn -PR`, `-sV`): would find hosts that never talk to this box
+  and the ports they expose. Needs §10.3 amended, root for ARP ping, and an interval tier
+  past the 10s `Slow` cap. The owner's own use case — an unexpected `:32400` and `:445` on a
+  router — turned out to be visible passively in the socket table anyway.
+- **Packet capture / L7 decoding**: declined outright, already a §2 non-goal, and netwatch's job.

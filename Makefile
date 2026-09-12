@@ -27,7 +27,7 @@ test:
 # so diffs in PRs show layout changes, not color changes.
 screenshot: build
 	@mkdir -p docs/screens
-	@for tab in overview ports system services cron disks network docker samba nfs sessions logs updates; do for size in 100x30 80x24; do \
+	@for tab in overview ports system services cron disks network lan docker samba nfs sessions logs updates; do for size in 100x30 80x24; do \
 	  ./dist/$(BIN) --once --demo --size $$size $$tab > docs/screens/$$tab-$$size.txt; \
 	done; done
 	@rm -f docs/screens/shell-*.txt

@@ -56,8 +56,8 @@ What is listening, how long it has been there, and what it probably is.
 
 ## Modules
 
-Overview · Ports · System · Services · Disks · Network · Docker · Samba ·
-NFS · Sessions · Logs · Updates. Each ships with a collector, a parser, a
+Overview · Ports · System · Services · Cron · Disks · Network · LAN · Docker ·
+Samba · NFS · Sessions · Logs · Updates. Each ships with a collector, a parser, a
 captured fixture, parser tests, an Overview card, a tab, and
 `sitrep modules info <id>`.
 
@@ -68,6 +68,13 @@ braille graph, rx up and tx down. `enter` graphs the selected interface,
 `space` adds it as a side-by-side panel.
 
 ![Network tab with two interface graph panels](docs/img/network.png)
+
+LAN lists the devices this box shares a segment with, read out of the kernel's
+neighbor table: vendor from the IEEE OUI, a flag on the locally-administered
+MACs that phones rotate per network, and which of them are talking to a
+service here or being talked to. Nothing is scanned — a device that has never
+spoken to this box does not appear, and no packet is sent to find out. Name
+them yourself in `~/.config/sitrep/lan.toml`.
 
 `--view dense` drops the chrome and tiles your `dense_modules` into a grid
 for the big monitor.
