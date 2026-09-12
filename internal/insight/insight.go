@@ -86,6 +86,19 @@ func Check(data map[string]any) []Insight {
 		}
 	}
 	if d, ok := data["disks"].(disks.Data); ok {
+		for _, a := range d.Arrays {
+			switch {
+			case a.Degraded || a.State != "active":
+				add(Crit, "Disks", "%s %s degraded %s", a.Name, a.Level, a.Status)
+			case a.Progress != "":
+				add(Warn, "Disks", "%s %s", a.Name, a.Progress)
+			}
+		}
+		for _, p := range d.Pools {
+			if p.Health != "ONLINE" {
+				add(Crit, "Disks", "zpool %s is %s", p.Name, p.Health)
+			}
+		}
 		for _, m := range d.Mounts {
 			switch {
 			case m.Pct >= diskCrit:

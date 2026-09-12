@@ -87,4 +87,12 @@ screen), and everything kernwatch does with eBPF, cgroups, and actions (§2).
   shows; the 480-key dump is not a snapshot's business. `vfs objects` / fruit deliberately out —
   owner's call: a module of their own if wanted (docs/MODULES.md). Version from `smbd --version`
   when smbstatus is refused. Daemon states via the shared `collect.ShowProps`.
+- **Sensors on System** (owner asked "what's missing"). hwmon walked directly, no `sensors`
+  binary: temp/fan inputs per chip, the driver's max/crit as thresholds, 80/95 °C when it has
+  none. Insight names the sensor furthest past its own threshold.
+- **Disk I/O and raid on Disks.** Rates from `/proc/diskstats` at the module's 30s cadence, so
+  they are a 30s average, not a graph: honest for a slow module. Partitions skipped (they split
+  the spindle's numbers); lvm matched to `dm-N` via lsblk KNAME. md from `/proc/mdstat`, zfs from
+  `zpool list -H` when present; the parser tests carry a degraded sample since this box has
+  neither.
 

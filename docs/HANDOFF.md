@@ -124,7 +124,7 @@ Shell out; don't reimplement. Every exec goes through `collect.Run(ctx, name, ar
 | Listening + established sockets | `ss -tulnpH` / `ss -tunapH` (fallback: `/proc/net/{tcp,tcp6,udp,udp6}` + `/proc/*/fd` scan when `ss` missing) |
 | Process start time (port "listening since") | `/proc/<pid>/stat` starttime × clock ticks vs boot time |
 | Services | `systemctl list-units --type=service --all --output=json`, `systemctl list-units --failed --output=json` |
-| Block devices, mounts | `lsblk -J -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS,MODEL`, `/proc/mounts`, `findmnt -J` |
+| Block devices, mounts | `lsblk -J -o NAME,KNAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS,MODEL`, `/proc/mounts`, `findmnt -J`, `/proc/diskstats`, `/proc/mdstat`, `zpool list -H` |
 | SMART | `smartctl -H -j /dev/X` (root only, Slow, 5 min interval) |
 | Network | gopsutil interfaces + `ip -j addr`, `ip -j route`, `/etc/resolv.conf` / `resolvectl status` |
 | Docker | `docker ps --format '{{json .}}'` + `docker inspect` for port maps; Podman via the same CLI shape if `docker` is absent and `podman` present |
@@ -144,7 +144,7 @@ Build in this order. Each is shippable alone.
 | 2 | **ports** (hero) | 3s | count listening, count established, newest listener | See §6. |
 | 3 | **system** | 2s | load, mem bar, 60s CPU sparkline | Distro/kernel/arch, uptime, load 1/5/15, CPU model + cores × threads + GHz range (`lscpu -J`, once), CPU% sparkline, mem/swap bars, PSI, per-cpu bars in an htop-style grid grouped by NUMA node (node header: cpu list, node memory from sysfs), collapsing to one sparkline cell per cpu when the grid outgrows the screen, top 5 processes by CPU and by RSS. That's it — btop does the rest. |
 | 4 | **services** | 5s | n active, n failed, most recent failure | Failed units pinned to top with exit code and time since. Then active, then inactive (collapsed). Filter with `/`. |
-| 5 | **disks** | 30s / SMART 5m | worst-full mount %, n devices, SMART worst | Block tree from `lsblk`, usage bars per mount, `!` at ≥85% and `!!` at ≥95`, SMART health column when root. Mounts are here, not a separate module. |
+| 5 | **disks** | 30s / SMART 5m | worst-full mount %, n devices, SMART worst | Block tree from `lsblk` with ↓↑ rate and util% per device (diskstats deltas, 30s), a raid section for md arrays (`/proc/mdstat`) and zfs pools (`zpool list`) with degraded and rebuild state and a crit insight, usage bars per mount, `!` at ≥85% and `!!` at ≥95`, SMART health column when root. Mounts are here, not a separate module. |
 | 6 | **network** | 2s | primary IP, ↓↑ rate, default route iface | Hostname and the active firewall (ufw / nftables / firewalld unit state; defaults and rule count when root, `◐` otherwise). Interfaces with addrs, state, link speed/duplex for physical NICs (sysfs), rx/tx rate (mirrored braille graph), default route, DNS servers, Tailscale/WireGuard ifaces labeled as such. The graphed interface's title carries its card model (`lspci`, once), driver and MAC. |
 | 7 | **docker** | 5s | n running, n unhealthy/exited | Containers: name, image, status, uptime, published ports. Also feeds `ports` for `docker-proxy` resolution. Podman fallback. |
 | 8 | **samba** | 10s | n shares, n connected clients | Server block from `testparm -sv`: role, workgroup, netbios name, version, smbd/nmbd/winbind state, protocol range, signing, encryption, auth backend, guest mapping, interfaces, hosts allow/deny, log level. Shares (valid users, force user, hosts allow, browseable, writable, guest, path), connected sessions, open files. `appliance_sensitive`. |

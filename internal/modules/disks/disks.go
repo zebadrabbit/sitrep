@@ -24,6 +24,7 @@ import (
 // Device is one node of `lsblk -J`.
 type Device struct {
 	Name        string   `json:"name"`
+	KName       string   `json:"kname"` // kernel name (dm-0 for an lvm volume)
 	Size        string   `json:"size"`
 	Type        string   `json:"type"`
 	FSType      string   `json:"fstype"`
@@ -31,6 +32,12 @@ type Device struct {
 	Model       string   `json:"model"`
 	Children    []Device `json:"children,omitempty"`
 	SMART       string   `json:"smart,omitempty"` // PASSED, FAILED, "" (not checked)
+	// I/O since the previous tick (30s), from /proc/diskstats; HasIO is
+	// false on the first tick and for partitions.
+	HasIO  bool    `json:"has_io,omitempty"`
+	RdRate float64 `json:"rd_rate,omitempty"` // bytes/s
+	WrRate float64 `json:"wr_rate,omitempty"`
+	Util   float64 `json:"util,omitempty"` // % of the interval the device was busy
 }
 
 // Mount is a usage row.
@@ -46,6 +53,8 @@ type Mount struct {
 // Data is one collection.
 type Data struct {
 	Devices   []Device  `json:"devices"`
+	Arrays    []Array   `json:"arrays,omitempty"` // md, from /proc/mdstat
+	Pools     []Pool    `json:"pools,omitempty"`  // zfs, from zpool list
 	Mounts    []Mount   `json:"mounts"`
 	Worst     *Mount    `json:"worst,omitempty"`
 	NDevices  int       `json:"n_devices"`
@@ -60,6 +69,8 @@ type Module struct {
 	root    bool
 	smart   map[string]string // name → PASSED/FAILED, refreshed every 5m
 	smartAt time.Time
+	prev    map[string]diskstat // last diskstats sample, for rates
+	prevAt  time.Time
 }
 
 func New(demo bool) *Module {
@@ -74,12 +85,16 @@ func (*Module) Update(tea.Msg) tea.Cmd  { return nil }
 func (*Module) Keys() []key.Binding     { return nil }
 
 func (*Module) Info() string {
-	return `Collects: block device tree (lsblk), usage per real mount (ext4/xfs/btrfs/
+	return `Collects: block device tree (lsblk) with read/write rate and utilisation per
+device from /proc/diskstats deltas (30s average; partitions skipped), md arrays
+from /proc/mdstat and zfs pools from zpool list with degraded/rebuild state,
+usage per real mount (ext4/xfs/btrfs/
 zfs/vfat/nfs/cifs; snap loops and tmpfs skipped), ! at ≥85% and !! at ≥95%,
 and SMART overall health per disk when root.
 Needs:    lsblk (util-linux). smartctl (smartmontools) + root for SMART; shown
 as ◐ otherwise.
-Execs:    lsblk -J -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS,MODEL every 30s;
+Execs:    lsblk -J -o NAME,KNAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS,MODEL every 30s, zpool list
+          when present;
 smartctl -H -j /dev/<disk> every 5 minutes.
 Interval: 30s (SMART 5m).`
 }
@@ -134,7 +149,7 @@ func ParseSmart(out []byte) (string, error) {
 }
 
 func (m *Module) Collect(ctx context.Context) (module.Data, error) {
-	res, err := m.run.Run(ctx, "lsblk", "-J", "-o", "NAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS,MODEL")
+	res, err := m.run.Run(ctx, "lsblk", "-J", "-o", "NAME,KNAME,SIZE,TYPE,FSTYPE,MOUNTPOINTS,MODEL")
 	if err != nil {
 		return nil, err
 	}
@@ -153,6 +168,17 @@ func (m *Module) Collect(ctx context.Context) (module.Data, error) {
 		}
 	}
 	m.smartPass(ctx, &d)
+	if b, err := m.run.ReadFile("/proc/diskstats"); err == nil {
+		cur := ParseDiskstats(b)
+		rates(d.Devices, m.prev, cur, d.Collected.Sub(m.prevAt))
+		m.prev, m.prevAt = cur, d.Collected
+	}
+	if b, err := m.run.ReadFile("/proc/mdstat"); err == nil {
+		d.Arrays = ParseMdstat(b)
+	}
+	if res, err := m.run.Run(ctx, "zpool", "list", "-H", "-o", "name,health,size,alloc,cap"); err == nil {
+		d.Pools = ParseZpoolList(res.Stdout)
+	}
 	d.Mounts = m.mounts(ctx)
 	for i := range d.Mounts {
 		if d.Worst == nil || d.Mounts[i].Pct > d.Worst.Pct {
@@ -264,6 +290,16 @@ func (*Module) Card(d module.Data, w int) string {
 		smart = s.Warn.Render(s.Glyph.Degraded + " SMART " + dd.SMART)
 	}
 	lines = append(lines, fmt.Sprintf("%s disks  %d mounts  %s", s.Bold.Render(fmt.Sprint(dd.NDevices)), len(dd.Mounts), smart))
+	for _, a := range dd.Arrays {
+		if a.Degraded || a.State != "active" {
+			lines = append(lines, s.Crit.Render(fmt.Sprintf("%s %s %s %s", s.Glyph.Crit, a.Name, a.Level, a.Status))+" "+s.Dim.Render(a.Progress))
+		}
+	}
+	for _, p := range dd.Pools {
+		if p.Health != "ONLINE" {
+			lines = append(lines, s.Crit.Render(fmt.Sprintf("%s %s %s", s.Glyph.Crit, p.Name, p.Health)))
+		}
+	}
 	return strings.Join(lines, "\n")
 }
 
@@ -278,9 +314,17 @@ func (*Module) View(d module.Data, w, h int) string {
 	for _, mt := range dd.Mounts {
 		rows = append(rows, []string{mt.Target, ui.Bar(mt.Pct, barW) + " " + ui.Threshold(mt.Pct), fmt.Sprintf("%3.0f%%", mt.Pct), ui.Bytes(mt.Used) + "/" + ui.Bytes(mt.Total), s.Dim.Render(mt.Source + " " + mt.FSType)})
 	}
-	out := []string{s.Bold.Render("mounts"), ui.Table([]string{"TARGET", "USAGE", "", "USED/TOTAL", "SOURCE"}, rows, w), "", s.Bold.Render("block devices") + "  " + s.Dim.Render("SMART "+dd.SMART)}
+	out := []string{s.Bold.Render("mounts"), ui.Table([]string{"TARGET", "USAGE", "", "USED/TOTAL", "SOURCE"}, rows, w), ""}
+	out = append(out, raidLines(dd, w)...)
+	out = append(out, s.Bold.Render("block devices")+"  "+s.Dim.Render("SMART "+dd.SMART+" · I/O avg over 30s"))
+	// The I/O slot exists only once there are two samples (never on the
+	// first tick, never in demo), so the tree does not carry a blank gap.
+	showIO := false
 	for _, dev := range dd.Devices {
-		out = append(out, tree(dev, "", w)...)
+		showIO = showIO || hasIO(dev)
+	}
+	for _, dev := range dd.Devices {
+		out = append(out, tree(dev, "", w, showIO)...)
 	}
 	res := strings.Join(out, "\n")
 	if h > 0 {
@@ -289,7 +333,19 @@ func (*Module) View(d module.Data, w, h int) string {
 	return res
 }
 
-func tree(d Device, indent string, w int) []string {
+func hasIO(d Device) bool {
+	if d.HasIO {
+		return true
+	}
+	for _, c := range d.Children {
+		if hasIO(c) {
+			return true
+		}
+	}
+	return false
+}
+
+func tree(d Device, indent string, w int, showIO bool) []string {
 	s := theme.Current()
 	smart := ""
 	switch d.SMART {
@@ -308,14 +364,54 @@ func tree(d Device, indent string, w int) []string {
 			mp = "  " + m
 		}
 	}
-	line := fmt.Sprintf("%s%-12s %7s  %-5s %s%s%s", indent, d.Name, d.Size, d.Type, s.Dim.Render(extra), mp, smart)
+	// A fixed-width I/O slot so the model and mountpoint line up across rows.
+	io := ""
+	if showIO {
+		io = strings.Repeat(" ", 26)
+	}
+	if d.HasIO {
+		util := fmt.Sprintf("%3.0f%%", d.Util)
+		if d.Util >= 90 {
+			util = s.Warn.Render(util)
+		}
+		io = fmt.Sprintf("↓%-8s ↑%-8s %s ", ui.Bytes(uint64(d.RdRate))+"/s", ui.Bytes(uint64(d.WrRate))+"/s", util)
+	}
+	line := fmt.Sprintf("%s%-12s %7s  %-5s %s %s%s%s", indent, d.Name, d.Size, d.Type, io, s.Dim.Render(extra), mp, smart)
 	out := []string{line}
 	for i, c := range d.Children {
 		branch := "├─"
 		if i == len(d.Children)-1 {
 			branch = "└─"
 		}
-		out = append(out, tree(c, indent+branch, w)...)
+		out = append(out, tree(c, indent+branch, w, showIO)...)
 	}
 	return out
+}
+
+// raidLines is the md arrays and zfs pools section, absent when the box has
+// neither. A degraded array or non-ONLINE pool is crit; a rebuild is warn.
+func raidLines(dd Data, w int) []string {
+	if len(dd.Arrays) == 0 && len(dd.Pools) == 0 {
+		return nil
+	}
+	s := theme.Current()
+	rows := [][]string{}
+	for _, a := range dd.Arrays {
+		st := s.OK.Render(s.Glyph.OK) + " " + a.State
+		switch {
+		case a.Degraded || a.State != "active":
+			st = s.Crit.Render(s.Glyph.Crit + " degraded")
+		case a.Progress != "":
+			st = s.Warn.Render(s.Glyph.Warn + " " + a.Progress)
+		}
+		rows = append(rows, []string{a.Name, s.Dim.Render(a.Level), st, a.Status, s.Dim.Render(strings.Join(a.Members, " ")), a.Progress})
+	}
+	for _, p := range dd.Pools {
+		st := s.OK.Render(s.Glyph.OK) + " " + p.Health
+		if p.Health != "ONLINE" {
+			st = s.Crit.Render(s.Glyph.Crit + " " + p.Health)
+		}
+		rows = append(rows, []string{p.Name, s.Dim.Render("zpool"), st, p.Cap, s.Dim.Render(p.Alloc + " of " + p.Size), ""})
+	}
+	return []string{s.Bold.Render("raid"), ui.Table([]string{"NAME", "LEVEL", "STATE", "STATUS", "MEMBERS", ""}, rows, w), ""}
 }

@@ -2,6 +2,7 @@
    "blockdevices": [
       {
          "name": "loop0",
+         "kname": "loop0",
          "size": "63.8M",
          "type": "loop",
          "fstype": "squashfs",
@@ -11,6 +12,7 @@
          "model": null
       },{
          "name": "loop1",
+         "kname": "loop1",
          "size": "63.8M",
          "type": "loop",
          "fstype": "squashfs",
@@ -20,6 +22,7 @@
          "model": null
       },{
          "name": "loop2",
+         "kname": "loop2",
          "size": "74M",
          "type": "loop",
          "fstype": "squashfs",
@@ -29,6 +32,7 @@
          "model": null
       },{
          "name": "loop3",
+         "kname": "loop3",
          "size": "74M",
          "type": "loop",
          "fstype": "squashfs",
@@ -38,6 +42,7 @@
          "model": null
       },{
          "name": "loop4",
+         "kname": "loop4",
          "size": "115.3M",
          "type": "loop",
          "fstype": "squashfs",
@@ -47,6 +52,7 @@
          "model": null
       },{
          "name": "loop5",
+         "kname": "loop5",
          "size": "115.3M",
          "type": "loop",
          "fstype": "squashfs",
@@ -56,6 +62,7 @@
          "model": null
       },{
          "name": "loop6",
+         "kname": "loop6",
          "size": "50.1M",
          "type": "loop",
          "fstype": "squashfs",
@@ -65,6 +72,7 @@
          "model": null
       },{
          "name": "loop7",
+         "kname": "loop7",
          "size": "50.3M",
          "type": "loop",
          "fstype": "squashfs",
@@ -74,6 +82,7 @@
          "model": null
       },{
          "name": "sda",
+         "kname": "sda",
          "size": "223.5G",
          "type": "disk",
          "fstype": null,
@@ -84,6 +93,7 @@
          "children": [
             {
                "name": "sda1",
+               "kname": "sda1",
                "size": "1M",
                "type": "part",
                "fstype": null,
@@ -93,6 +103,7 @@
                "model": null
             },{
                "name": "sda2",
+               "kname": "sda2",
                "size": "223.5G",
                "type": "part",
                "fstype": "ext4",
@@ -104,6 +115,7 @@
          ]
       },{
          "name": "sdb",
+         "kname": "sdb",
          "size": "931.5G",
          "type": "disk",
          "fstype": "LVM2_member",
@@ -114,6 +126,7 @@
          "children": [
             {
                "name": "datavg-datalv",
+               "kname": "dm-0",
                "size": "931.5G",
                "type": "lvm",
                "fstype": "xfs",
