@@ -23,6 +23,7 @@ import (
 	"github.com/shirou/gopsutil/v4/process"
 
 	sitrep "github.com/zebadrabbit/sitrep"
+	"github.com/zebadrabbit/sitrep/internal/collect"
 	"github.com/zebadrabbit/sitrep/internal/detect"
 	"github.com/zebadrabbit/sitrep/internal/module"
 	"github.com/zebadrabbit/sitrep/internal/theme"
@@ -52,6 +53,8 @@ type Data struct {
 	// 10s some task spent stalled on that resource. 0 when the kernel has no PSI.
 	Pressure  [3]float64 `json:"pressure"`
 	CPUPct    float64    `json:"cpu_pct"`
+	PerCPU    []float64  `json:"per_cpu"`
+	Topo      Topology   `json:"topology"`
 	CPUHist   []float64  `json:"cpu_hist"`
 	MemUsed   uint64     `json:"mem_used"`
 	MemTotal  uint64     `json:"mem_total"`
@@ -64,9 +67,11 @@ type Data struct {
 type Module struct {
 	demo bool
 	hist []float64
+	run  *collect.Runner
+	topo *Topology // lscpu result, cached after the first tick
 }
 
-func New(demo bool) *Module { return &Module{demo: demo} }
+func New(demo bool) *Module { return &Module{demo: demo, run: collect.New("system", demo)} }
 
 func (*Module) ID() string              { return "system" }
 func (*Module) Title() string           { return "System" }
@@ -77,10 +82,11 @@ func (*Module) Keys() []key.Binding     { return nil }
 
 func (*Module) Info() string {
 	return `Collects: distro, kernel, arch, uptime, load 1/5/15, CPU% (60-sample ring for the
-sparkline), memory and swap, PSI pressure (some avg10 for cpu, memory, io), top 5
-processes by CPU and by RSS.
-Needs:    /proc. No root needed.
-Execs:    nothing; everything comes from gopsutil reading /proc.
+sparkline), per-cpu utilisation, CPU model and socket/core/thread topology, NUMA
+nodes with their cpus and memory, memory and swap, PSI pressure (some avg10 for
+cpu, memory, io), top 5 processes by CPU and by RSS.
+Needs:    /proc. No root needed. Without lscpu the topology lines are omitted.
+Execs:    lscpu -J, once; everything else is gopsutil and sysfs reads.
 Interval: 2s.`
 }
 
@@ -98,7 +104,7 @@ func (m *Module) Collect(ctx context.Context) (module.Data, error) {
 	if m.demo {
 		return m.demoData()
 	}
-	d, err := collect(ctx)
+	d, err := gather(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -107,13 +113,14 @@ func (m *Module) Collect(ctx context.Context) (module.Data, error) {
 		m.hist = m.hist[len(m.hist)-histLen:]
 	}
 	d.CPUHist = append([]float64(nil), m.hist...)
+	d.Topo = m.topology(ctx)
 	if os.Getenv("SITREP_CAPTURE_FIXTURES") == "1" {
 		capture(d)
 	}
 	return d, nil
 }
 
-func collect(ctx context.Context) (Data, error) {
+func gather(ctx context.Context) (Data, error) {
 	var d Data
 	hi, err := host.InfoWithContext(ctx)
 	if err != nil {
@@ -130,6 +137,7 @@ func collect(ctx context.Context) (Data, error) {
 	if p, err := cpu.PercentWithContext(ctx, 0, false); err == nil && len(p) > 0 {
 		d.CPUPct = p[0]
 	}
+	d.PerCPU = perCPU(ctx)
 	if v, err := mem.VirtualMemoryWithContext(ctx); err == nil {
 		d.MemUsed, d.MemTotal = v.Used, v.Total
 	}
@@ -259,6 +267,7 @@ func (*Module) View(d module.Data, w, h int) string {
 	lines := []string{
 		fmt.Sprintf("%s %s   %s %s   %s %s", s.Dim.Render("distro"), sd.Distro, s.Dim.Render("kernel"), sd.Kernel, s.Dim.Render("arch"), sd.Arch),
 		fmt.Sprintf("%s %s   %s %.2f %.2f %.2f", s.Dim.Render("uptime"), ui.Age(sd.Uptime), s.Dim.Render("load"), sd.Load[0], sd.Load[1], sd.Load[2]),
+		cpuLine(sd),
 		"",
 		fmt.Sprintf("%s  %s %3.0f%%", s.Dim.Render("cpu "), ui.Sparkline(sd.CPUHist, barW, 100), sd.CPUPct),
 		fmt.Sprintf("%s  %s %3.0f%%  %s / %s", s.Dim.Render("mem "), ui.Bar(pct(sd.MemUsed, sd.MemTotal), barW), pct(sd.MemUsed, sd.MemTotal), ui.Bytes(sd.MemUsed), ui.Bytes(sd.MemTotal)),
@@ -279,5 +288,7 @@ func (*Module) View(d module.Data, w, h int) string {
 		s.Bold.Render("top by cpu") + "\n" + ui.Table([]string{"PID", "PROCESS", "CPU"}, cpuRows, half),
 		s.Bold.Render("top by rss") + "\n" + ui.Table([]string{"PID", "PROCESS", "RSS"}, rssRows, half),
 	}, 2, w)
-	return strings.Join(append(lines, tables), "\n")
+	// Whatever height the header and tables leave is the per-cpu block's.
+	budget := h - len(lines) - strings.Count(tables, "\n") - 2
+	return strings.Join(append(lines, cpuBlock(sd, w, budget), "", tables), "\n")
 }

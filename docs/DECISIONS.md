@@ -72,3 +72,9 @@ screen), and everything kernwatch does with eBPF, cgroups, and actions (§2).
 - **Cells colored by their own height** (syswatch). The CPU sparkline uses the Bar thresholds
   per cell (ok, warn ≥ 85, crit ≥ 95); the mirrored network graph dims columns under a quarter
   of peak and keeps the direction color above, because throughput is not an error state.
+- **CPU topology + per-cpu grid on System** (owner asked for "an htop vibe"). `lscpu -J` once for
+  model/sockets/cores/threads/MHz and the NUMA cpu lists; node memory from sysfs each tick;
+  per-cpu % from gopsutil. The grid (`  0 ██░░░░░░░░ 16%` cells, wrapped to width, one block per
+  node) is used when it fits the height the header and top-5 tables leave; otherwise one
+  sparkline cell per cpu per node, so a quad-socket EPYC still fits on one screen.
+

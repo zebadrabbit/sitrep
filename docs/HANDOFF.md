@@ -142,7 +142,7 @@ Build in this order. Each is shippable alone.
 |---|---|---|---|---|
 | 1 | **overview** | — | — | Composed from every enabled module's `Card`. Header: hostname, distro, kernel, uptime, load, `● n ok ○ n failed ◐ n needs-root`. |
 | 2 | **ports** (hero) | 3s | count listening, count established, newest listener | See §6. |
-| 3 | **system** | 2s | load, mem bar, 60s CPU sparkline | Distro/kernel/arch, uptime, load 1/5/15, CPU% sparkline, mem/swap bars, top 5 processes by CPU and by RSS. That's it — btop does the rest. |
+| 3 | **system** | 2s | load, mem bar, 60s CPU sparkline | Distro/kernel/arch, uptime, load 1/5/15, CPU model + cores × threads + GHz range (`lscpu -J`, once), CPU% sparkline, mem/swap bars, PSI, per-cpu bars in an htop-style grid grouped by NUMA node (node header: cpu list, node memory from sysfs), collapsing to one sparkline cell per cpu when the grid outgrows the screen, top 5 processes by CPU and by RSS. That's it — btop does the rest. |
 | 4 | **services** | 5s | n active, n failed, most recent failure | Failed units pinned to top with exit code and time since. Then active, then inactive (collapsed). Filter with `/`. |
 | 5 | **disks** | 30s / SMART 5m | worst-full mount %, n devices, SMART worst | Block tree from `lsblk`, usage bars per mount, `!` at ≥85% and `!!` at ≥95`, SMART health column when root. Mounts are here, not a separate module. |
 | 6 | **network** | 2s | primary IP, ↓↑ rate, default route iface | Interfaces with addrs, state, rx/tx rate (mirrored braille graph), default route, DNS servers, Tailscale/WireGuard ifaces labeled as such. |

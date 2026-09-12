@@ -3,8 +3,11 @@ package system
 import (
 	"context"
 	"encoding/json"
+	"reflect"
 	"strings"
 	"testing"
+
+	sitrep "github.com/zebadrabbit/sitrep"
 )
 
 func TestDemoFixtureRenders(t *testing.T) {
@@ -20,7 +23,7 @@ func TestDemoFixtureRenders(t *testing.T) {
 	if card := m.Card(d, 60); strings.Count(card, "\n") > 5 {
 		t.Errorf("card exceeds 6 lines:\n%s", card)
 	}
-	if v := m.View(d, 100, 28); !strings.Contains(v, "top by cpu") {
+	if v := m.View(d, 100, 28); !strings.Contains(v, "top by cpu") || !strings.Contains(v, "node0") {
 		t.Errorf("view missing sections")
 	}
 	if _, err := json.Marshal(d); err != nil {
@@ -41,5 +44,71 @@ func TestParsePressure(t *testing.T) {
 	}
 	if got := ParsePressure(nil); got != 0 {
 		t.Errorf("missing file: got %v want 0", got)
+	}
+}
+
+func TestParseLscpu(t *testing.T) {
+	b, err := sitrep.Fixtures.ReadFile("testdata/fixtures/system/lscpu_J.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := ParseLscpu(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Model != "Intel Xeon E5504 @ 2.00GHz" {
+		t.Errorf("model %q", got.Model)
+	}
+	if got.Sockets != 2 || got.Cores != 4 || got.Threads != 1 || got.MaxMHz != 2000 || got.MinMHz != 1600 {
+		t.Errorf("topology %+v", got)
+	}
+	if len(got.Nodes) != 2 || got.Nodes[0].List != "0,2,4,6" || !reflect.DeepEqual(got.Nodes[1].CPUs, []int{1, 3, 5, 7}) {
+		t.Errorf("nodes %+v", got.Nodes)
+	}
+	if _, err := ParseLscpu([]byte("nope")); err == nil {
+		t.Error("garbage should fail")
+	}
+}
+
+func TestParseCPUList(t *testing.T) {
+	if got := parseCPUList("0-3,8,10-11"); !reflect.DeepEqual(got, []int{0, 1, 2, 3, 8, 10, 11}) {
+		t.Errorf("got %v", got)
+	}
+}
+
+func TestParseNodeMeminfo(t *testing.T) {
+	in := []byte("Node 0 MemTotal:       37080724 kB\nNode 0 MemFree:        31952208 kB\nNode 0 MemUsed:         5128516 kB\n")
+	total, used := ParseNodeMeminfo(in)
+	if total != 37080724*1024 || used != 5128516*1024 {
+		t.Errorf("got %d %d", total, used)
+	}
+}
+
+// cpuBlock picks the htop grid when it fits the height and one cell per cpu
+// when it does not; both group by NUMA node.
+func TestCPUBlockLayouts(t *testing.T) {
+	small := Data{CPUs: 8, PerCPU: make([]float64, 8), Topo: Topology{Nodes: []Node{
+		{ID: 0, CPUs: []int{0, 2, 4, 6}, List: "0,2,4,6"}, {ID: 1, CPUs: []int{1, 3, 5, 7}, List: "1,3,5,7"},
+	}}}
+	grid := cpuBlock(small, 100, 10)
+	if !strings.Contains(grid, "node0") || !strings.Contains(grid, "░") || strings.Count(grid, "\n") > 4 {
+		t.Errorf("grid:\n%s", grid)
+	}
+	big := Data{CPUs: 256, PerCPU: make([]float64, 256)}
+	for i := range 4 {
+		n := Node{ID: i}
+		for c := i * 64; c < (i+1)*64; c++ {
+			n.CPUs = append(n.CPUs, c)
+		}
+		big.Topo.Nodes = append(big.Topo.Nodes, n)
+	}
+	strip := cpuBlock(big, 100, 10)
+	if strings.Contains(strip, "░") || strings.Count(strip, "\n") != 3 {
+		t.Errorf("strip should be one line per node:\n%s", strip)
+	}
+	// No topology at all: one flat block, no node header.
+	flat := cpuBlock(Data{CPUs: 4, PerCPU: make([]float64, 4)}, 100, 10)
+	if strings.Contains(flat, "node") || !strings.Contains(flat, "░") {
+		t.Errorf("flat:\n%s", flat)
 	}
 }
