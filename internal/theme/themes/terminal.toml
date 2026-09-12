@@ -1,0 +1,13 @@
+# Your terminal's own 16-color palette, by ANSI index: whatever your emulator
+# maps 1 (red), 2 (green), 3 (yellow), 6 (cyan) and 8 (bright black) to.
+# Looks right on any scheme; no selection background because 0 is unreadable
+# on a light palette.
+name   = "terminal"
+accent = "3"
+ok     = "2"
+warn   = "3"
+crit   = "1"
+dim    = "8"
+port   = "6"
+selection = ""
+ascii  = false

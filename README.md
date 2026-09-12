@@ -107,7 +107,7 @@ CLI only; the TUI has no settings screen.
 
 ```
 sitrep config init | path | show | edit
-sitrep theme list | show | set <name>       # amber (default), mono, nord, or yours
+sitrep theme list | show | set <name>       # amber (default), mono, nord, terminal, or yours
 sitrep modules enable <id> | disable <id>   # appliance-sensitive modules ask once
 ```
 

@@ -1,11 +1,11 @@
 # Theming
 
-sitrep ships three themes and reads yours from `~/.config/sitrep/themes/<name>.toml`.
+sitrep ships four themes and reads yours from `~/.config/sitrep/themes/<name>.toml`.
 Pick one with `sitrep theme set <name>` or `theme = "<name>"` in `config.toml`.
 `sitrep theme list` shows what is available.
 
 ```
-sitrep theme list        # amber mono nord + anything in ~/.config/sitrep/themes/
+sitrep theme list        # amber mono nord terminal + anything in ~/.config/sitrep/themes/
 sitrep theme set nord
 ```
 
@@ -23,8 +23,9 @@ selection = "#060606" # cursor-row background; the only one sitrep paints
 ascii  = false       # true swaps ● ○ ◐ ▸ for * o ~ >
 ```
 
-Every color is a hex string. Leave one empty (`""`) for the terminal's
-default foreground; `mono` does that for all of them and relies on bold and
+Every color is a hex string or an ANSI index (`"1"`..`"255"`); `terminal`
+uses indexes 1–8 so the colors are whatever your emulator's scheme says they
+are. Leave one empty (`""`) for the terminal's default foreground; `mono` does that for all of them and relies on bold and
 faint. There is no page background key on purpose: sitrep leaves your
 terminal's. `selection` is the one background it paints, under the cursor
 row next to the accent bar; empty turns it off.
@@ -58,4 +59,4 @@ them. `sitrep doctor` warns when the locale is not UTF-8 and suggests it.
 - Hotkey characters use `theme.Hotkey`, via `ui.Hotkey(key, rest)`. Nothing
   else uses that style (§10.6).
 - Adding a color means adding a key to `Theme`, a style to `Styles`, and a
-  value in all three builtin files.
+  value in all four builtin files.
