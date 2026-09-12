@@ -116,7 +116,8 @@ See [docs/THEMING.md](docs/THEMING.md) for theme files and
 
 ## Development
 
-Develop on the box you monitor. `make lint test screenshot` is the gate;
+Want a tab sitrep does not have? [docs/MODULES.md](docs/MODULES.md) walks
+through writing one. Develop on the box you monitor. `make lint test screenshot` is the gate;
 `sitrep doctor` must be clean unprivileged and as root before a phase ends.
 Fixtures are captured from the live host with
 `SITREP_CAPTURE_FIXTURES=1 sitrep snapshot` and scrubbed by

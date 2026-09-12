@@ -51,7 +51,7 @@ internal/theme/      theme.toml → lipgloss styles
 internal/ui/         table, card, sparkline, mirrored braille graph, glyphs
 internal/modules/    one package per module
 testdata/fixtures/   captured command output, per module
-docs/                HANDOFF.md, DECISIONS.md, THEMING.md, demo.tape
+docs/                HANDOFF.md, DECISIONS.md, THEMING.md, MODULES.md, demo.tape
 ```
 
 ## Style
