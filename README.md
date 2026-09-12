@@ -20,6 +20,7 @@ sitrep doctor           # what works, what needs root, what is missing
 sitrep why              # plain-English findings and which tab to open; exit 1 on crit
 sitrep ports --json     # any module as a one-shot table or JSON
 sitrep snapshot         # every module as JSON
+sitrep diff old.json    # listeners, containers, units, mounts that changed since that snapshot
 sitrep modules list     # id, state, reason
 sitrep modules info ports
 ```

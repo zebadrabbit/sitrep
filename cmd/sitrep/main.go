@@ -74,7 +74,7 @@ func root() *cobra.Command {
 	r.PersistentFlags().BoolVar(&flags.json, "json", false, "machine-readable output")
 	r.PersistentFlags().BoolVar(&flags.demo, "demo", false, "run against bundled fixtures; no host access")
 
-	r.AddCommand(versionCmd(), doctorCmd(), whyCmd(), configCmd(), themeCmd(), snapshotCmd(), modulesCmd())
+	r.AddCommand(versionCmd(), doctorCmd(), whyCmd(), diffCmd(), configCmd(), themeCmd(), snapshotCmd(), modulesCmd())
 	return r
 }
 
@@ -192,6 +192,66 @@ func collectAll(entries []module.Entry) map[string]any {
 		snap[e.Module.ID()] = d
 	}
 	return snap
+}
+
+// diffCmd compares a saved snapshot to the box now, or to a second file:
+// what appeared, what is gone, what changed state. Exit 0 either way; it
+// is a change report, not a health check.
+func diffCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "diff <old.json> [new.json]",
+		Short: "What changed since a saved `sitrep snapshot`",
+		Args:  cobra.RangeArgs(1, 2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			old, err := readSnapshot(args[0])
+			if err != nil {
+				return err
+			}
+			var cur insight.Snapshot
+			if len(args) == 2 {
+				if cur, err = readSnapshot(args[1]); err != nil {
+					return err
+				}
+			} else {
+				entries, _ := resolve()
+				b, _ := json.Marshal(collectAll(entries))
+				_ = json.Unmarshal(b, &cur)
+			}
+			changes := insight.Diff(old, cur)
+			if flags.json {
+				enc := json.NewEncoder(cmd.OutOrStdout())
+				enc.SetIndent("", "  ")
+				return enc.Encode(changes)
+			}
+			s := theme.Current()
+			if len(changes) == 0 {
+				fmt.Fprintln(cmd.OutOrStdout(), s.OK.Render(s.Glyph.OK)+" no changes")
+				return nil
+			}
+			glyph := map[string]string{"new": s.OK.Render(s.Glyph.New), "gone": s.Dim.Render(s.Glyph.Fail), "changed": s.Warn.Render(s.Glyph.Warn)}
+			tab := ""
+			for _, c := range changes {
+				if c.Tab != tab {
+					tab = c.Tab
+					fmt.Fprintln(cmd.OutOrStdout(), s.Bold.Render(tab))
+				}
+				fmt.Fprintf(cmd.OutOrStdout(), "  %s %s\n", glyph[c.Kind], c.Text)
+			}
+			return nil
+		},
+	}
+}
+
+func readSnapshot(path string) (insight.Snapshot, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var s insight.Snapshot
+	if err := json.Unmarshal(b, &s); err != nil {
+		return nil, fmt.Errorf("%s: not a sitrep snapshot: %w", path, err)
+	}
+	return s, nil
 }
 
 // whyCmd is the Overview's findings as text for a ticket. Exit 1 when any

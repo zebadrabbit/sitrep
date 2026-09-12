@@ -56,3 +56,8 @@ screen), and everything kernwatch does with eBPF, cgroups, and actions (§2).
   three under the status line; `why` prints them all and exits 1 on crit. Not a module: it has
   no collector, and a rule that needs new data belongs in the module that collects it. System
   Data grew a `cpus` field for the load rule.
+- **`sitrep diff old.json [new.json]`** (syswatch's `diff`). Compares a saved snapshot to the
+  box now: listeners new or gone (folded across addresses like the Ports tab), containers and
+  their state, unit states, sessions, mounts and usage past 5 points, kernel, reboot, pending
+  updates. Still no history (§1): the file is the user's, written by `snapshot`, kept wherever
+  they like. Exit 0 always; `why` is the health check.
