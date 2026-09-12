@@ -1,11 +1,26 @@
 package app
 
 import (
+	"context"
 	"strings"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
+
+	"github.com/zebadrabbit/sitrep/internal/config"
+	"github.com/zebadrabbit/sitrep/internal/detect"
+	"github.com/zebadrabbit/sitrep/internal/module"
+	"github.com/zebadrabbit/sitrep/internal/modules/system"
 )
+
+// demoEntries is one enabled demo module, enough to exercise the store.
+func demoEntries(t *testing.T) []module.Entry {
+	t.Helper()
+	m := system.New(true)
+	return []module.Entry{{Module: m, Enabled: true, Avail: m.Detect(context.Background(), detect.Env{Demo: true})}}
+}
+
+var _ = config.Config{}
 
 func sized(m Model, w, h int) Model {
 	r, _ := m.Update(tea.WindowSizeMsg{Width: w, Height: h})
@@ -73,5 +88,23 @@ func TestKeys(t *testing.T) {
 	_, cmd := r.Update(tea.KeyPressMsg{Code: 'q', Text: "q"})
 	if cmd == nil {
 		t.Error("q should quit")
+	}
+}
+
+func TestFreezeDropsDataAndRestarts(t *testing.T) {
+	m := sized(New(Options{Entries: demoEntries(t)}), 100, 30)
+	r, _ := m.Update(tea.KeyPressMsg{Code: 'f', Text: "f"})
+	m = r.(Model)
+	if !m.frozen || !strings.Contains(m.Render(100, 30), "[frozen]") {
+		t.Fatal("f should freeze and say so in the header")
+	}
+	r, cmd := m.Update(module.DataMsg{ID: "system", Data: "x"})
+	m = r.(Model)
+	if cmd != nil || m.store["system"].data != nil {
+		t.Error("frozen: data must be dropped and no tick scheduled")
+	}
+	r, cmd = m.Update(tea.KeyPressMsg{Code: 'f', Text: "f"})
+	if m = r.(Model); m.frozen || cmd == nil {
+		t.Error("second f must unfreeze and restart collection")
 	}
 }

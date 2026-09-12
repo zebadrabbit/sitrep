@@ -52,6 +52,7 @@ type Model struct {
 	mode    Mode
 	fell    bool // mode is Lite only because the terminal was too small
 	help    bool
+	frozen  bool   // f: no collections land until unfrozen
 	hint    string // one-time notice in the footer until the next key
 	entries []module.Entry
 	tabs    []int // indexes into entries that are enabled, in hotkey order
@@ -144,6 +145,12 @@ func (m Model) key(k tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case "r":
 		return m, m.refresh()
+	case "f":
+		m.frozen = !m.frozen
+		if m.frozen {
+			return m, nil
+		}
+		return m, m.startAll()
 	}
 	// Digits, then per-module letters past the tenth tab (see module.Resolve).
 	if len(s) == 1 {
@@ -245,6 +252,9 @@ func (m Model) header(w int) string {
 	}
 	if m.opts.Demo {
 		left += "  " + s.Dim.Render("[demo]")
+	}
+	if m.frozen {
+		left += "  " + s.Warn.Render("[frozen]")
 	}
 	if m.collecting() {
 		left += " " + s.Dim.Render(spinner[m.frame%len(spinner)])
@@ -369,7 +379,7 @@ func (m Model) overviewData() overview.Data {
 
 func (m Model) footer(w int) string {
 	s := theme.Current()
-	keys := ui.Hotkey("q", "uit") + "  " + ui.Hotkey("?", " help") + "  " + ui.Hotkey("r", "efresh")
+	keys := ui.Hotkey("q", "uit") + "  " + ui.Hotkey("?", " help") + "  " + ui.Hotkey("r", "efresh") + "  " + ui.Hotkey("f", "reeze")
 	if e := m.activeEntry(); e != nil && len(e.Module.Keys()) > 0 {
 		parts := []string{}
 		for _, k := range e.Module.Keys() {
@@ -394,6 +404,7 @@ func (m Model) helpOverlay(w, h int) string {
 		ui.Hotkey("j/k ↑/↓", "  move selection"),
 		ui.Hotkey("enter", "  open detail   ") + ui.Hotkey("esc", "  back"),
 		ui.Hotkey("/", "  filter   ") + ui.Hotkey("s", "  cycle sort   ") + ui.Hotkey("r", "  refresh"),
+		ui.Hotkey("f", "  freeze the screen (collection stops until pressed again)"),
 		ui.Hotkey("?", "  this help   ") + ui.Hotkey("q", "  quit"),
 	}
 	box := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(s.Accent.GetForeground()).Padding(0, 2).

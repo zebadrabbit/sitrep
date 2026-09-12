@@ -56,6 +56,10 @@ func (m Model) onData(msg module.DataMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	s.collecting = false
+	if m.frozen {
+		// f: drop the result and stop the ticker; unfreezing restarts everything.
+		return m, nil
+	}
 	s.took = msg.Took
 	s.updated = time.Now()
 	s.err = msg.Err
@@ -70,7 +74,7 @@ func (m Model) onData(msg module.DataMsg) (tea.Model, tea.Cmd) {
 func (m Model) onTick(msg tickMsg) (tea.Model, tea.Cmd) {
 	s := m.store[msg.id]
 	mod, ok := module.Lookup(msg.id)
-	if s == nil || !ok || s.collecting {
+	if s == nil || !ok || s.collecting || m.frozen {
 		return m, nil
 	}
 	s.collecting = true
