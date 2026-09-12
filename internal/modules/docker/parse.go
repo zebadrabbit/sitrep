@@ -29,6 +29,12 @@ type Container struct {
 	Ports   []PortMap `json:"ports"`
 	Project string    `json:"project,omitempty"` // compose project
 	Created string    `json:"created"`
+	// From cgroup v2, running containers only. CPU% needs two ticks.
+	HasCPU   bool    `json:"has_cpu,omitempty"`
+	CPUPct   float64 `json:"cpu_pct,omitempty"`
+	HasMem   bool    `json:"has_mem,omitempty"`
+	Mem      uint64  `json:"mem,omitempty"`
+	MemLimit uint64  `json:"mem_limit,omitempty"` // 0 = unlimited
 }
 
 // psLine is the tolerant shape of one `{{json .}}` line. podman emits

@@ -37,6 +37,9 @@ type Module struct {
 	bin  string
 	mu   sync.RWMutex
 	last Data // for Lookup from the ports collector goroutine
+	// cgroup cpu usage_usec per container at the previous tick, for CPU%.
+	prevCPU map[string]uint64
+	statsAt time.Time
 }
 
 func New(demo bool) *Module {
@@ -52,12 +55,15 @@ func (*Module) Keys() []key.Binding     { return nil }
 
 func (*Module) Info() string {
 	return `Collects: every container (running or not) with image, status, health,
-uptime, published ports and compose project. Feeds Ports: a listener owned by
+uptime, published ports and compose project; CPU% and memory (against the
+limit when one is set) per running container from cgroup v2, no docker stats
+exec. Feeds Ports: a listener owned by
 docker-proxy resolves to docker▸<container>, and a process inside a
 host-network container is matched through its cgroup.
 Needs:    docker CLI and socket access (docker group or root). Podman is used
 when docker is absent.
 Execs:    docker ps -a --format '{{json .}}'  (no per-container inspect: one exec per cycle)
+Reads:    /sys/fs/cgroup/<container scope>/{cpu.stat,memory.current,memory.max}
 Interval: 5s.`
 }
 
@@ -89,6 +95,7 @@ func (m *Module) Collect(ctx context.Context) (module.Data, error) {
 		return nil, err
 	}
 	d := Data{Runtime: m.bin, Containers: ParsePS(res.Stdout)}
+	m.stats(d.Containers, time.Now())
 	for _, c := range d.Containers {
 		switch {
 		case c.Running && c.Health == "unhealthy":
@@ -171,6 +178,9 @@ func (*Module) Card(d module.Data, w int) string {
 		line += "  " + s.Dim.Render(fmt.Sprintf("%s %d exited", s.Glyph.Fail, dd.Exited))
 	}
 	lines := []string{line}
+	if top := topCPU(dd.Containers); top != nil {
+		lines = append(lines, s.Dim.Render("top ")+" "+top.Name+"  "+cpuStr(*top)+"  "+memStr(*top))
+	}
 	for _, c := range dd.Containers {
 		if c.Health == "unhealthy" || c.Health == "starting" {
 			lines = append(lines, s.Warn.Render(s.Glyph.Warn)+" "+c.Name+"  "+s.Dim.Render(c.Status))
@@ -199,9 +209,9 @@ func (*Module) View(d module.Data, w, h int) string {
 		case c.Health == "starting":
 			g = s.Warn.Render(s.Glyph.Degraded)
 		}
-		rows = append(rows, []string{g + " " + c.Name, ShortImage(c.Image) + s.Dim.Render(tag(c.Image)), c.Status, ports(c.Ports), s.Dim.Render(c.Project)})
+		rows = append(rows, []string{g + " " + c.Name, cpuStr(c), memStr(c), ShortImage(c.Image) + s.Dim.Render(tag(c.Image)), c.Status, ports(c.Ports), s.Dim.Render(c.Project)})
 	}
-	out := ui.Table([]string{"  NAME", "IMAGE", "STATUS", "PORTS", "PROJECT"}, rows, w)
+	out := ui.Table([]string{"  NAME", "CPU", "MEM", "IMAGE", "STATUS", "PORTS", "PROJECT"}, rows, w)
 	out += "\n" + s.Dim.Render(fmt.Sprintf("%d containers via %s", len(dd.Containers), dd.Runtime))
 	if h > 0 {
 		out = strings.Join(strings.Split(out, "\n")[:min(h, strings.Count(out, "\n")+1)], "\n")
@@ -231,4 +241,40 @@ func ports(ps []PortMap) string {
 		}
 	}
 	return strings.Join(parts, " ")
+}
+
+func cpuStr(c Container) string {
+	if !c.HasCPU {
+		return ""
+	}
+	txt := fmt.Sprintf("%.1f%%", c.CPUPct)
+	if c.CPUPct >= 100 {
+		return theme.Current().Warn.Render(txt) // more than a core, sustained: worth a look
+	}
+	return txt
+}
+
+func memStr(c Container) string {
+	if !c.HasMem {
+		return ""
+	}
+	txt := ui.Bytes(c.Mem)
+	if c.MemLimit > 0 {
+		p := float64(c.Mem) / float64(c.MemLimit) * 100
+		txt += fmt.Sprintf(" %.0f%%", p)
+		if p >= 90 {
+			return theme.Current().Crit.Render(txt) // about to be OOM-killed
+		}
+	}
+	return txt
+}
+
+func topCPU(cs []Container) *Container {
+	var top *Container
+	for i := range cs {
+		if cs[i].HasCPU && (top == nil || cs[i].CPUPct > top.CPUPct) {
+			top = &cs[i]
+		}
+	}
+	return top
 }

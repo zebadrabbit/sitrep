@@ -95,4 +95,11 @@ screen), and everything kernwatch does with eBPF, cgroups, and actions (§2).
   the spindle's numbers); lvm matched to `dm-N` via lsblk KNAME. md from `/proc/mdstat`, zfs from
   `zpool list -H` when present; the parser tests carry a degraded sample since this box has
   neither.
+- **Docker CPU/mem from cgroup v2, not `docker stats`.** stats blocks for a full sampling
+  interval (2.1s measured) which would make every 5s tick slow and trip doctor's 500ms warning.
+  cpu.stat / memory.current / memory.max are world-readable; CPU% is the usage delta between
+  ticks, blank on the first. Three cgroup layouts tried (docker+systemd, docker+cgroupfs,
+  podman); cgroup v1 boxes simply get no columns.
+- **Memory breakdown on System**: available, cached, buffers, dirty as one dim line under swap.
+  The bar stays used/total; available is the number that answers "short on memory?".
 
