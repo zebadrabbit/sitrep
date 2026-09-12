@@ -49,6 +49,7 @@ const (
 	memWarn, memCrit   = 90, 95
 	swapCrit           = 50 // % of swap in use alongside memCrit
 	loadPerCPU         = 2.0
+	memPressureWarn    = 25  // PSI some avg10: a quarter of the last 10s stalled on memory
 	logsWarn           = 100 // errors in the last hour
 )
 
@@ -68,6 +69,9 @@ func Check(data map[string]any) []Insight {
 			add(Crit, "System", "memory %.0f%% used and swap %.0f%%: thrashing likely", mem, swap)
 		case mem >= memWarn:
 			add(Warn, "System", "memory %.0f%% used", mem)
+		}
+		if d.Pressure[1] >= memPressureWarn {
+			add(Warn, "System", "memory pressure %.0f%%: tasks stalled on reclaim", d.Pressure[1])
 		}
 		if d.CPUs > 0 && d.Load[0] > loadPerCPU*float64(d.CPUs) {
 			add(Warn, "System", "load %.1f on %d cpus", d.Load[0], d.CPUs)

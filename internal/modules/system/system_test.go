@@ -33,3 +33,13 @@ func TestCardHandlesNoData(t *testing.T) {
 		t.Errorf("got %q", c)
 	}
 }
+
+func TestParsePressure(t *testing.T) {
+	in := []byte("some avg10=0.18 avg60=0.16 avg300=0.81 total=13856151\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n")
+	if got := ParsePressure(in); got != 0.18 {
+		t.Errorf("got %v want 0.18", got)
+	}
+	if got := ParsePressure(nil); got != 0 {
+		t.Errorf("missing file: got %v want 0", got)
+	}
+}

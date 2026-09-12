@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -40,21 +41,24 @@ type Proc struct {
 
 // Data is the collected snapshot. JSON tags feed `sitrep snapshot`.
 type Data struct {
-	Hostname  string        `json:"hostname"`
-	Distro    string        `json:"distro"`
-	Kernel    string        `json:"kernel"`
-	Arch      string        `json:"arch"`
-	Uptime    time.Duration `json:"uptime"`
-	Load      [3]float64    `json:"load"`
-	CPUs      int           `json:"cpus"`
-	CPUPct    float64       `json:"cpu_pct"`
-	CPUHist   []float64     `json:"cpu_hist"`
-	MemUsed   uint64        `json:"mem_used"`
-	MemTotal  uint64        `json:"mem_total"`
-	SwapUsed  uint64        `json:"swap_used"`
-	SwapTotal uint64        `json:"swap_total"`
-	TopCPU    []Proc        `json:"top_cpu"`
-	TopRSS    []Proc        `json:"top_rss"`
+	Hostname string        `json:"hostname"`
+	Distro   string        `json:"distro"`
+	Kernel   string        `json:"kernel"`
+	Arch     string        `json:"arch"`
+	Uptime   time.Duration `json:"uptime"`
+	Load     [3]float64    `json:"load"`
+	CPUs     int           `json:"cpus"`
+	// Pressure is PSI "some avg10" for cpu, memory, io: the share of the last
+	// 10s some task spent stalled on that resource. 0 when the kernel has no PSI.
+	Pressure  [3]float64 `json:"pressure"`
+	CPUPct    float64    `json:"cpu_pct"`
+	CPUHist   []float64  `json:"cpu_hist"`
+	MemUsed   uint64     `json:"mem_used"`
+	MemTotal  uint64     `json:"mem_total"`
+	SwapUsed  uint64     `json:"swap_used"`
+	SwapTotal uint64     `json:"swap_total"`
+	TopCPU    []Proc     `json:"top_cpu"`
+	TopRSS    []Proc     `json:"top_rss"`
 }
 
 type Module struct {
@@ -73,7 +77,8 @@ func (*Module) Keys() []key.Binding     { return nil }
 
 func (*Module) Info() string {
 	return `Collects: distro, kernel, arch, uptime, load 1/5/15, CPU% (60-sample ring for the
-sparkline), memory and swap, top 5 processes by CPU and by RSS.
+sparkline), memory and swap, PSI pressure (some avg10 for cpu, memory, io), top 5
+processes by CPU and by RSS.
 Needs:    /proc. No root needed.
 Execs:    nothing; everything comes from gopsutil reading /proc.
 Interval: 2s.`
@@ -132,7 +137,28 @@ func collect(ctx context.Context) (Data, error) {
 		d.SwapUsed, d.SwapTotal = s.Used, s.Total
 	}
 	d.TopCPU, d.TopRSS = topProcs(ctx)
+	for i, res := range []string{"cpu", "memory", "io"} {
+		b, _ := os.ReadFile("/proc/pressure/" + res)
+		d.Pressure[i] = ParsePressure(b)
+	}
 	return d, nil
+}
+
+// ParsePressure returns the "some avg10" value of one /proc/pressure file,
+// 0 when absent (kernels without PSI, or CONFIG_PSI_DEFAULT_DISABLED).
+func ParsePressure(b []byte) float64 {
+	for _, line := range strings.Split(string(b), "\n") {
+		if !strings.HasPrefix(line, "some ") {
+			continue
+		}
+		for _, f := range strings.Fields(line) {
+			if v, ok := strings.CutPrefix(f, "avg10="); ok {
+				x, _ := strconv.ParseFloat(v, 64)
+				return x
+			}
+		}
+	}
+	return 0
 }
 
 func topProcs(ctx context.Context) (byCPU, byRSS []Proc) {
@@ -182,6 +208,26 @@ func capture(d Data) {
 	_ = os.WriteFile(p, b, 0o644)
 }
 
+// pressureLine is "psi   cpu 0.2%  mem 0.0%  io 0.1%", each value warn-colored
+// past 25 and crit past 50: stalls, not utilisation, so the bar thresholds
+// would be far too lax.
+func pressureLine(sd Data) string {
+	s := theme.Current()
+	parts := make([]string, 3)
+	for i, name := range []string{"cpu", "mem", "io "} {
+		v := sd.Pressure[i]
+		txt := fmt.Sprintf("%4.1f%%", v)
+		switch {
+		case v >= 50:
+			txt = s.Crit.Render(txt)
+		case v >= 25:
+			txt = s.Warn.Render(txt)
+		}
+		parts[i] = name + " " + txt
+	}
+	return "psi   " + strings.Join(parts, "  ")
+}
+
 func pct(used, total uint64) float64 {
 	if total == 0 {
 		return 0
@@ -199,6 +245,7 @@ func (*Module) Card(d module.Data, w int) string {
 		fmt.Sprintf("load  %.2f %.2f %.2f", sd.Load[0], sd.Load[1], sd.Load[2]),
 		fmt.Sprintf("mem   %s %3.0f%% %s/%s", ui.Bar(pct(sd.MemUsed, sd.MemTotal), barW), pct(sd.MemUsed, sd.MemTotal), ui.Bytes(sd.MemUsed), ui.Bytes(sd.MemTotal)),
 		fmt.Sprintf("cpu   %s %3.0f%%", ui.Sparkline(sd.CPUHist, barW, 100), sd.CPUPct),
+		pressureLine(sd),
 	}, "\n")
 }
 
@@ -216,6 +263,7 @@ func (*Module) View(d module.Data, w, h int) string {
 		fmt.Sprintf("%s  %s %3.0f%%", s.Dim.Render("cpu "), ui.Sparkline(sd.CPUHist, barW, 100), sd.CPUPct),
 		fmt.Sprintf("%s  %s %3.0f%%  %s / %s", s.Dim.Render("mem "), ui.Bar(pct(sd.MemUsed, sd.MemTotal), barW), pct(sd.MemUsed, sd.MemTotal), ui.Bytes(sd.MemUsed), ui.Bytes(sd.MemTotal)),
 		fmt.Sprintf("%s  %s %3.0f%%  %s / %s", s.Dim.Render("swap"), ui.Bar(pct(sd.SwapUsed, sd.SwapTotal), barW), pct(sd.SwapUsed, sd.SwapTotal), ui.Bytes(sd.SwapUsed), ui.Bytes(sd.SwapTotal)),
+		pressureLine(sd) + "  " + s.Dim.Render("stall share, last 10s"),
 		"",
 	}
 	cpuRows := make([][]string, 0, 5)
