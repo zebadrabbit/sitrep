@@ -1,0 +1,8 @@
+Id=smbd.service
+ActiveState=active
+
+Id=nmbd.service
+ActiveState=active
+
+Id=winbind.service
+ActiveState=inactive

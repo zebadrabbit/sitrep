@@ -82,4 +82,9 @@ screen), and everything kernwatch does with eBPF, cgroups, and actions (§2).
   or `nft list ruleset` only when root, `◐ rules need root` otherwise, never an error. firewalld
   rules are not read (nothing to capture from). NIC model from `lspci -mm -nn` once, matched by
   PCI address; speed/duplex/driver from sysfs each tick; virtual ifaces stay blank.
+- **Samba server block** (owner: "not just shares but important config items"). `testparm -sv`
+  replaces `-s`: one exec, every effective value. [global] is allowlisted to ~20 keys the block
+  shows; the 480-key dump is not a snapshot's business. `vfs objects` / fruit deliberately out —
+  owner's call: a module of their own if wanted (docs/MODULES.md). Version from `smbd --version`
+  when smbstatus is refused. Daemon states via the shared `collect.ShowProps`.
 

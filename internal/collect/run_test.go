@@ -49,3 +49,10 @@ func TestTimeout(t *testing.T) {
 		t.Errorf("err=%v", err)
 	}
 }
+
+func TestShowProps(t *testing.T) {
+	u := ShowProps([]byte("Id=smbd.service\nActiveState=active\n\nId=nmbd.service\nActiveState=inactive\nUnitFileState=\n"))
+	if u["smbd"]["ActiveState"] != "active" || u["nmbd"]["ActiveState"] != "inactive" || len(u) != 2 {
+		t.Errorf("got %v", u)
+	}
+}

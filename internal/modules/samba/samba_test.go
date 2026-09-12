@@ -20,7 +20,10 @@ func TestParseTestparm(t *testing.T) {
 	writable = yes
 	browseable = yes
 `
-	sh := ParseTestparm([]byte(out))
+	g, sh := ParseTestparm([]byte(out))
+	if g["server string"] != "x" {
+		t.Errorf("global: %v", g)
+	}
 	if len(sh) != 3 {
 		t.Fatalf("got %d shares", len(sh))
 	}
@@ -33,8 +36,49 @@ func TestParseTestparm(t *testing.T) {
 	if !sh[2].Writable {
 		t.Errorf("scratch: %+v", sh[2])
 	}
-	if len(ParseTestparm(nil)) != 0 {
+	if _, sh := ParseTestparm(nil); len(sh) != 0 {
 		t.Error("empty")
+	}
+}
+
+func TestParseTestparmVerbose(t *testing.T) {
+	out := `[global]
+	server role = standalone server
+	workgroup = WORKGROUP
+	server min protocol = SMB2_02
+	server max protocol = SMB3
+	hosts allow = 
+	panic action = /usr/share/samba/panic-action %d
+[clippy]
+	path = /srv/clippy
+	valid users = clippy
+	force user = user
+	hosts allow = 127.0.0.1 10.0.1.0/24
+	hosts deny = 0.0.0.0/0
+`
+	g, sh := ParseTestparm([]byte(out))
+	if g["server role"] != "standalone server" || g["server max protocol"] != "SMB3" || g["hosts allow"] != "" {
+		t.Errorf("global: %v", g)
+	}
+	if _, ok := g["panic action"]; ok {
+		t.Error("only the allowlisted keys should be kept")
+	}
+	if sh[0].ValidUsers != "clippy" || sh[0].ForceUser != "user" || sh[0].HostsAllow != "127.0.0.1 10.0.1.0/24" || sh[0].HostsDeny != "0.0.0.0/0" {
+		t.Errorf("share: %+v", sh[0])
+	}
+}
+
+func TestDemoShowsServerBlock(t *testing.T) {
+	m := New(true)
+	d, err := m.Collect(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	v := m.View(d, 100, 40)
+	for _, want := range []string{"standalone", "WORKGROUP", "SMB3", "smbd", "USERS", "HOSTS"} {
+		if !strings.Contains(v, want) {
+			t.Errorf("view missing %q:\n%s", want, v)
+		}
 	}
 }
 

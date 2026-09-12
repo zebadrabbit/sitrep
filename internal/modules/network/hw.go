@@ -26,25 +26,13 @@ type Firewall struct {
 // rules are not read (no firewalld here to capture from); add firewall-cmd
 // --list-all when a box needs it.
 func ParseFirewallUnits(out []byte) Firewall {
-	var fw Firewall
-	for _, block := range strings.Split(string(out), "\n\n") {
-		var id, active, enabled string
-		for _, line := range strings.Split(block, "\n") {
-			k, v, _ := strings.Cut(line, "=")
-			switch k {
-			case "Id":
-				id = strings.TrimSuffix(v, ".service")
-			case "ActiveState":
-				active = v
-			case "UnitFileState":
-				enabled = v
-			}
-		}
-		if active == "active" && fw.Backend == "" {
-			fw = Firewall{Backend: id, Active: true, Enabled: enabled == "enabled"}
+	units := collect.ShowProps(out)
+	for _, id := range []string{"ufw", "nftables", "firewalld"} {
+		if p := units[id]; p["ActiveState"] == "active" {
+			return Firewall{Backend: id, Active: true, Enabled: p["UnitFileState"] == "enabled"}
 		}
 	}
-	return fw
+	return Firewall{}
 }
 
 // ParseUfwStatus reads `ufw status verbose`: the Default line and the rule
