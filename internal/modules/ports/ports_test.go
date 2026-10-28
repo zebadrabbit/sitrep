@@ -97,6 +97,38 @@ tcp ESTAB 0 0 10.0.0.5:3000 10.0.0.9:1
 	}
 }
 
+// Unprivileged, ss -p hides other users' processes, so a docker-proxy
+// listener arrives with no pid. The docker port map is keyed on proto+port
+// and must still identify it; a hidden pid on an unpublished port stays
+// whatever the lower layers say.
+func TestHiddenPidResolvesByDockerPort(t *testing.T) {
+	m := synthetic(t, map[string]string{
+		"ss_tulnpH.txt": "tcp LISTEN 0 4096 0.0.0.0:3000 0.0.0.0:*\ntcp LISTEN 0 4096 0.0.0.0:22 0.0.0.0:*\n",
+		"ss_tunaH.txt":  "",
+		"fs/proc/stat":  procStat, "fs/proc/uptime": "100.00 1.00\n",
+	})
+	m.SetContainerLookup(func(proto string, port int) (ContainerRef, bool) {
+		if proto == "tcp" && port == 3000 {
+			return ContainerRef{Name: "planka-planka-1", Image: "ghcr.io/plankanban/planka:2.1.1"}, true
+		}
+		return ContainerRef{}, false
+	}, nil)
+	d, err := m.Collect(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	by := map[int]Row{}
+	for _, r := range d.(Data).Rows {
+		by[r.Port] = r
+	}
+	if r := by[3000]; r.PID != 0 || r.Identity.Source != SrcDocker || r.Identity.Name != "planka" || r.Container != "planka-planka-1" {
+		t.Errorf("hidden-pid published port: %+v", r)
+	}
+	if r := by[22]; r.Identity.Source != SrcPortTable || r.Identity.Name != "ssh" {
+		t.Errorf("hidden-pid unpublished port: %+v", r)
+	}
+}
+
 func TestNewAndGoneMarkers(t *testing.T) {
 	base := map[string]string{
 		"fs/proc/stat": procStat, "fs/proc/uptime": "100.00 1.00\n",

@@ -348,8 +348,12 @@ func scriptPath(cmdline, cwd string) string {
 
 // container fills l.Container from the docker module: docker-proxy rows by
 // published port, anything else by the docker-<id>.scope in its cgroup.
+// A row whose owner is hidden (unprivileged ss -p omits other users'
+// processes) is also tried by port: docker owns any host port it publishes,
+// so the map answers without a pid and the default experience still shows
+// docker▸<name> instead of the port table's guess.
 func (m *Module) container(l *Listener, cgroup string) {
-	if l.Process == "docker-proxy" && m.byPort != nil {
+	if (l.Process == "docker-proxy" || l.PID == 0) && m.byPort != nil {
 		if ref, ok := m.byPort(l.Proto, l.Port); ok {
 			l.Container, l.Image = ref.Name, ref.Image
 		}
