@@ -154,3 +154,19 @@ func TestReadSensors(t *testing.T) {
 		t.Error("missing tree should be empty")
 	}
 }
+
+// The captured tree from pandalab (ProLiant DL360 G7: acpitz plus one
+// coretemp chip per socket, no hwmon fans — those sit behind IPMI).
+func TestReadSensorsCapturedFixture(t *testing.T) {
+	root := filepath.Join("..", "..", "..", "testdata", "fixtures", "system", "fs", "sys", "class", "hwmon")
+	temps, fans := readSensors(root)
+	if len(temps) != 9 || len(fans) != 0 {
+		t.Fatalf("temps %d fans %d: %+v", len(temps), len(fans), temps)
+	}
+	if temps[0].Chip != "acpitz" || temps[0].Value != 8.3 || temps[0].Max != 0 {
+		t.Errorf("acpitz %+v", temps[0])
+	}
+	if c := temps[1]; c.Chip != "coretemp" || c.Label != "Core 0" || c.Max != 87 || c.Crit != 97 {
+		t.Errorf("coretemp %+v", c)
+	}
+}
